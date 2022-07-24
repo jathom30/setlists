@@ -66,7 +66,7 @@ export const LoginRoute = () => {
   }
 
 
-  const isDisabledLogin = !(email && password) || loginUserQuery.isLoading
+  // const isDisabledLogin = !(email && password) || loginUserQuery.isLoading
 
   if (passwordResetSent) {
     return (
@@ -82,7 +82,7 @@ export const LoginRoute = () => {
   return (
     <div className="LoginRoute">
       <div className="LoginRoute__content">
-        <h1>Salon Recipes</h1>
+        <h1>Setlists</h1>
         {showSignup ? (
           <SignUpForm />
         ) : (
@@ -90,7 +90,7 @@ export const LoginRoute = () => {
             <FlexBox flexDirection="column" gap="1rem">
               <Input label="email" value={email} onChange={setEmail} name="email" />
               <Input type="password" label="password" value={password} onChange={setPassword} name="password" />
-              <Button kind="primary" type="submit" onClick={handleLogin} isDisabled={isDisabledLogin}>
+              <Button kind="primary" type="submit" onClick={handleLogin}>
                 <FlexBox gap=".5rem" alignItems="center">
                   {loginUserQuery.isLoading && <span>Loading...</span>}
                   Login

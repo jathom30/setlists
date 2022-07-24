@@ -8,6 +8,7 @@ import './SignUpForm.scss'
 export const SignUpForm = () => {
   const { signupUser } = useIdentityContext()
 
+  const [bandCode, setBandCode] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -19,7 +20,7 @@ export const SignUpForm = () => {
 
   const loginUserQuery = useQuery(
     ['register', email],
-    () => signupUser(email, password, {firstName, lastName}),
+    () => signupUser(email, password, {firstName, lastName, bandCode: [bandCode]}),
     {
       enabled: false,
       retry: false,
@@ -48,6 +49,7 @@ export const SignUpForm = () => {
           data-netlify="true"
         >
           <FlexBox flexDirection="column" gap="1rem">
+            <Input required label="Band code" value={bandCode} onChange={setBandCode} name="band-code" />
             <Input required label="First name" value={firstName} onChange={setFirstName} name="first-name" />
             <Input required label="Last name" value={lastName} onChange={setLastName} name="last-name" />
             <Input required label="Email" value={email} onChange={setEmail} name="email" />

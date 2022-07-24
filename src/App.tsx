@@ -1,10 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { MouseEvent, useEffect } from 'react';
 import './App.scss';
-import { MaxHeightContainer } from './components';
-import { Route, Routes } from 'react-router-dom';
+import { Button, Header, MaxHeightContainer } from 'components';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { useIdentityContext } from 'react-netlify-identity';
+import { BandRoute, LoginRoute, UserRoute } from 'routes';
+import { useQuery } from '@tanstack/react-query';
+
+const ProtectedRoute = ({children}: {children: JSX.Element}) => {
+  const { isLoggedIn } = useIdentityContext()
+  // const location = useLocation()
+
+  // if (location.hash.includes('recovery_token')) {
+  //   return (
+  //     <AccountRecoveryRoute />
+  //   )
+  // }
+
+  return (isLoggedIn) ? children : <LoginRoute />
+}
 
 function App() {
-  
+  // const {logoutUser, user} = useIdentityContext()
+  // const navigate = useNavigate()
+
   useEffect(() => {
     const handleResize = () => {
       const doc = document.documentElement
@@ -19,14 +37,47 @@ function App() {
     }
   }, [])
 
+  // const logoutUserQuery = useQuery(
+  //   ['logout', user?.email],
+  //   logoutUser,
+  //   {
+  //     enabled: false,
+  //     retry: false,
+  //     refetchOnMount: false,
+  //     refetchOnWindowFocus: false,
+  //     onSettled: () => {
+  //       navigate('/')
+  //     }
+  //   }
+  // )
+
+  // const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
+  //   e.preventDefault()
+  //   logoutUserQuery.refetch()
+  // }
+
   return (
     <div className="App">
       <MaxHeightContainer
         fullHeight
-        header={<p>Header</p>}
+        header={<Header />}
       >
         <Routes>
-          <Route path="/" element={<div>Main</div>} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Link to="band-settings">Band Settings</Link>
+            </ProtectedRoute>
+          } />
+          <Route path="/band-settings" element={
+            <ProtectedRoute>
+              <BandRoute />
+            </ProtectedRoute>
+          } />
+          <Route path="/user-settings" element={
+            <ProtectedRoute>
+              <UserRoute />
+            </ProtectedRoute>
+          } />
         </Routes>
       </MaxHeightContainer>
     </div>

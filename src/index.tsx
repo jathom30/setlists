@@ -6,21 +6,26 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { WindowDimsContextProvider } from 'context';
+import { IdentityContextProvider } from 'react-netlify-identity';
 
 const queryClient = new QueryClient()
+
+const url = "https://setlists.netlify.app"
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <WindowDimsContextProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </WindowDimsContextProvider>
-    </QueryClientProvider>
+    <IdentityContextProvider url={url}>
+      <QueryClientProvider client={queryClient}>
+        <WindowDimsContextProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </WindowDimsContextProvider>
+      </QueryClientProvider>
+    </IdentityContextProvider>
   </React.StrictMode>
 );
 
