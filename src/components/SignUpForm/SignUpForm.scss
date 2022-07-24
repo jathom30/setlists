@@ -1,0 +1,6 @@
+.SignUpForm {
+  width: 100%;
+  &__error-message {
+    color: var(--color-danger);
+  }
+}
