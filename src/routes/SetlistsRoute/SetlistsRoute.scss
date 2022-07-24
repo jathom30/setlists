@@ -1,0 +1,16 @@
+.SetlistsRoute {
+  padding: 1rem;
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  &__parent-set {
+    background: var(--color-component-background);
+    border-radius: .25rem;
+    box-shadow: var(--box-shadow);
+    transition: box-shadow .2s ease;
+    &:hover {
+      box-shadow: var(--box-shadow-hover);
+    }
+  }
+}

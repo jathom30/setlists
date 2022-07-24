@@ -1,27 +1,23 @@
-import React, { MouseEvent, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import './App.scss';
-import { Button, Header, MaxHeightContainer } from 'components';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { Header, MaxHeightContainer } from 'components';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
-import { BandRoute, LoginRoute, UserRoute } from 'routes';
-import { useQuery } from '@tanstack/react-query';
+import { AddBandRoute, LoginRoute, SetlistsRoute, UserRoute } from 'routes';
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
-  const { isLoggedIn } = useIdentityContext()
-  // const location = useLocation()
+  const { isLoggedIn, user } = useIdentityContext()
 
-  // if (location.hash.includes('recovery_token')) {
-  //   return (
-  //     <AccountRecoveryRoute />
-  //   )
-  // }
+  const hasBands = user?.user_metadata.bandCode.length > 0
+
+  if (!hasBands) {
+    return <AddBandRoute />
+  }
 
   return (isLoggedIn) ? children : <LoginRoute />
 }
 
 function App() {
-  // const {logoutUser, user} = useIdentityContext()
-  // const navigate = useNavigate()
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,25 +33,6 @@ function App() {
     }
   }, [])
 
-  // const logoutUserQuery = useQuery(
-  //   ['logout', user?.email],
-  //   logoutUser,
-  //   {
-  //     enabled: false,
-  //     retry: false,
-  //     refetchOnMount: false,
-  //     refetchOnWindowFocus: false,
-  //     onSettled: () => {
-  //       navigate('/')
-  //     }
-  //   }
-  // )
-
-  // const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
-  //   e.preventDefault()
-  //   logoutUserQuery.refetch()
-  // }
-
   return (
     <div className="App">
       <MaxHeightContainer
@@ -63,19 +40,24 @@ function App() {
         header={<Header />}
       >
         <Routes>
-          <Route path="/" element={
+        <Route path="/" element={
             <ProtectedRoute>
-              <Link to="band-settings">Band Settings</Link>
-            </ProtectedRoute>
-          } />
-          <Route path="/band-settings" element={
-            <ProtectedRoute>
-              <BandRoute />
+              <Navigate replace to="/setlists" />
             </ProtectedRoute>
           } />
           <Route path="/user-settings" element={
             <ProtectedRoute>
               <UserRoute />
+            </ProtectedRoute>
+          } />
+          <Route path="/setlists" element={
+            <ProtectedRoute>
+              <SetlistsRoute />
+            </ProtectedRoute>
+          } />
+          <Route path="/setlists/:id" element={
+            <ProtectedRoute>
+              <p>the specific setlist</p>
             </ProtectedRoute>
           } />
         </Routes>
