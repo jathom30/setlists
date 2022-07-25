@@ -3,18 +3,14 @@ import './App.scss';
 import { Header, MaxHeightContainer } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
-import { AddBandRoute, LoginRoute, SetlistsRoute, UserRoute } from 'routes';
+import { AddBandRoute, LoginRoute, SetlistRoute, SetlistsRoute, UserRoute } from 'routes';
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user } = useIdentityContext()
 
-  const hasBands = user?.user_metadata.bandCode.length > 0
+  const hasBands = user?.user_metadata.bandCode?.length > 0
 
-  if (!hasBands) {
-    return <AddBandRoute />
-  }
-
-  return (isLoggedIn) ? children : <LoginRoute />
+  return (isLoggedIn) ? !hasBands ? <AddBandRoute /> : children : <LoginRoute />
 }
 
 function App() {
@@ -57,7 +53,7 @@ function App() {
           } />
           <Route path="/setlists/:id" element={
             <ProtectedRoute>
-              <p>the specific setlist</p>
+              <SetlistRoute />
             </ProtectedRoute>
           } />
         </Routes>
@@ -67,3 +63,6 @@ function App() {
 }
 
 export default App;
+
+// TODO 
+// ! break BandSelect out of Header.tsx

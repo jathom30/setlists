@@ -10,17 +10,19 @@ export const AddBand = () => {
   const [bandCode, setBandCode] = useState('')
   const [bandName, setBandName] = useState('')
 
-  const bands = user?.user_metadata.bandCode
+  const bands: string[] = user?.user_metadata?.bandCode || []
   const createBandMutation = useMutation(createBand)
 
   const updateUserMetaDataMutation = useMutation(updateUser, {
-    onSuccess: () => {
-      window.location.reload()
+    onSuccess: (data) => {
+      console.log(data)
+      // window.location.reload()
     }
   })
 
   const handleExistingBand = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
     updateUserMetaDataMutation.mutate({ data: {
       bandCode: [...bands, bandCode],
       currentBand: bandCode

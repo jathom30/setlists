@@ -1,13 +1,14 @@
 import React, { MouseEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AddBand, Button, DeleteWarning, FlexBox, Input, LabelInput, Loader, Modal, PasswordStrength } from "components";
-import { faPlus, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faCheckSquare, faCircle, faPlus, faSquare, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useGetBands } from "hooks";
 import { useIdentityContext } from "react-netlify-identity";
 import { passwordStrength } from "utils";
 import { updateBand } from "api";
 import { Band } from "typings";
 import './UserRoute.scss'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const UserRoute = () => {
   const {user, updateUser} = useIdentityContext()
@@ -67,6 +68,13 @@ export const UserRoute = () => {
     })
   }
 
+  const handleSelectCurrentBand = (bandCode: string) => {
+    updateUserMutation.mutate({ data: {
+      currentBand: bandCode
+    }})
+  }
+
+  const currentBand: string | undefined = user?.user_metadata.currentBand
   const isEnabledPassword = !!password && (password === verifyPassword) && passwordStrength(password) > 0
 
   return (
@@ -110,6 +118,12 @@ export const UserRoute = () => {
             </FlexBox>
             {getBandsQuery.data?.map(band => (
               <FlexBox key={band.band_code} gap="1rem" alignItems="center" justifyContent="space-between">
+                <Button
+                  kind="secondary"
+                  onClick={() => handleSelectCurrentBand(band.band_code)}
+                >
+                  <FontAwesomeIcon size="2x" icon={currentBand === band.band_code ? faCheckSquare : faSquare} />
+                </Button>
                 <LabelInput value={band.name} onSubmit={(newName) => handleUpdateBand(newName, band)}>
                   <span>{band.name}</span>
                 </LabelInput>

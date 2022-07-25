@@ -1,34 +1,25 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getBand, getParentLists } from "api";
-import { FlexBox } from "components";
-import React, { useState } from "react";
-import { useIdentityContext } from "react-netlify-identity";
-import { Link } from "react-router-dom";
+import { getParentLists } from "api";
+import { Button, FlexBox, GridBox, HeaderBox, Loader, ParentListTile } from "components";
+import { PARENT_LISTS_QUERY } from "queryKeys";
+import { Link, useNavigate } from "react-router-dom";
 import { ParentList } from "typings";
 import './SetlistsRoute.scss'
+import { useGetCurrentBand } from "hooks";
+import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const SetlistsRoute = () => {
-  const {user} = useIdentityContext()
-  const currentBand: string | undefined = user?.user_metadata.currentBand
-  const [bandId, setBandId] = useState('')
+  const navigate = useNavigate()
+  const bandQuery = useGetCurrentBand()
 
-  useQuery(
-    ['bands', currentBand],
-    async () => {
-      const response = await getBand(currentBand || '')
-      return response
-    }, {
-      enabled: !!currentBand,
-      onSuccess: (data) => {
-        setBandId(data?.[0].id)
-      }
-    }
-  )
+  const bandId = bandQuery.data?.id
 
   const parentListsQuery = useQuery(
-    ['parent-list', bandId],
+    [PARENT_LISTS_QUERY, bandId],
     async () => {
-      const response = await getParentLists(bandId)
+      const response = await getParentLists(bandId || '')
       return response
     },
     {
@@ -41,21 +32,30 @@ export const SetlistsRoute = () => {
     ...parentList.fields
   })) as ParentList[] | undefined
 
+  const noLists = parentListsQuery.isSuccess && parentListsQuery.data.length === 0
+
   return (
     <div className="SetlistsRoute">
-      <h1>Setlists</h1>
-      <div className="SetlistsRoute__list">
-        {parentLists?.map(parent => (
-          <Link key={parent.id} to={`/setlists/${parent.id}`}>
-            <div className="SetlistsRoute__parent-set">
-              <FlexBox padding=".5rem" flexDirection="column" gap=".5rem">
-                <span>Name: <strong>{parent.name}</strong></span>
-                <span>Number of Sets: <strong>{parent.sets.length}</strong></span>
-              </FlexBox>
-            </div>
-          </Link>
-        ))}
-      </div>
+      <HeaderBox>
+        <h1>Setlists</h1>
+        {!noLists && <Button kind="primary">New setlist</Button>}
+      </HeaderBox>
+      {parentListsQuery.isLoading && <Loader size="l" />}
+      {noLists ? (
+        <FlexBox flexDirection="column" gap="1rem" alignItems="center">
+          <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
+          <span>Looks like you don't have any setlists made yet.</span>
+          <Button kind="primary" isRounded icon={faPlus} onClick={() => navigate('/create-new')}>Create your first setlist</Button>
+        </FlexBox>
+      ) : (
+        <GridBox gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))">
+          {parentLists?.map(parent => (
+            <Link key={parent.id} to={`/setlists/${parent.id}`}>
+              <ParentListTile parent={parent} />
+            </Link>
+          ))}
+        </GridBox>
+      )}
     </div>
   )
 }

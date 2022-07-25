@@ -4,6 +4,7 @@ import { useIdentityContext } from "react-netlify-identity";
 import { useNavigate } from "react-router-dom";
 import './LoginRoute.scss'
 import { useQuery } from "@tanstack/react-query";
+import { LOGIN_QUERY, PASSWORD_RECOVERY_QUERY } from "queryKeys";
 
 export const LoginRoute = () => {
   const {loginUser, requestPasswordRecovery} = useIdentityContext()
@@ -18,7 +19,7 @@ export const LoginRoute = () => {
   const [passwordResetSent, setPasswordResetSent] = useState(false)
 
   const loginUserQuery = useQuery(
-    ['login', email],
+    [LOGIN_QUERY, email],
     () => loginUser(email, password, true),
     {
       enabled: false,
@@ -40,7 +41,7 @@ export const LoginRoute = () => {
   }
 
   const requestPasswordRecoveryQuery = useQuery(
-    ['passwordRecovery'],
+    [PASSWORD_RECOVERY_QUERY],
     () => requestPasswordRecovery(email),
     {
       enabled: false,

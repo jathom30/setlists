@@ -4,6 +4,7 @@ import { useIdentityContext } from "react-netlify-identity";
 import { useQuery } from "@tanstack/react-query";
 import { passwordStrength } from "utils";
 import './SignUpForm.scss'
+import { REGISTER_QUERY } from "queryKeys";
 
 export const SignUpForm = () => {
   const { signupUser } = useIdentityContext()
@@ -18,8 +19,8 @@ export const SignUpForm = () => {
   const [registrationErr, setRegistrationErr] = useState('')
 
 
-  const loginUserQuery = useQuery(
-    ['register', email],
+  const registerUserQuery = useQuery(
+    [REGISTER_QUERY, email],
     () => signupUser(email, password, {firstName, lastName, bandCode: [bandCode]}),
     {
       enabled: false,
@@ -34,7 +35,7 @@ export const SignUpForm = () => {
 
   const handleRegister = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    loginUserQuery.refetch()
+    registerUserQuery.refetch()
   }
 
   const isDisabledRegister = !(firstName && lastName && email && password) || password !== verifyPassword || passwordStrength(password) < 1

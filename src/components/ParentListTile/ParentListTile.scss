@@ -1,0 +1,9 @@
+.ParentListTile {
+  background: var(--color-component-background);
+  border-radius: .25rem;
+  box-shadow: var(--box-shadow);
+  transition: box-shadow .2s ease;
+  &:hover {
+    box-shadow: var(--box-shadow-hover);
+  }
+}

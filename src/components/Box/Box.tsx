@@ -1,5 +1,5 @@
 import { StandardLonghandProperties } from 'csstype'
-import React from 'react'
+import React, { ReactNode } from 'react'
 import './Box.scss'
 import { createStyles, createClassNames } from './helpers'
 
@@ -95,4 +95,8 @@ export const GridBox: React.FC<GridBoxType & CommonBoxType> = (props) => (
   <Box display="grid" {...props}>
     {props.children}
   </Box>
+)
+
+export const HeaderBox = ({children}: {children: ReactNode}) => (
+  <FlexBox alignItems="center" gap="1rem" justifyContent="space-between">{children}</FlexBox>
 )
