@@ -2,15 +2,17 @@ import { faCheckSquare, faSquare, faTrash } from "@fortawesome/free-solid-svg-ic
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteSong, updateSong } from "api";
 import { AddNote, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal } from "components";
+import { keyLetters, majorMinorOptions, tempos } from "songConstants";
 import { WindowDimsContext } from "context";
 import { SongsContext } from "context/SongsContext";
 import pluralize from "pluralize";
 import { SONGS_QUERY } from "queryKeys";
 import React, { MouseEvent, useContext, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Select, { GroupBase } from "react-select";
+import Select from "react-select";
 import { Song } from "typings";
 import './SongRoute.scss'
+import { capitalizeFirstLetter } from "utils";
 
 export const SongRoute = () => {
   const { songId } = useParams()
@@ -28,7 +30,7 @@ export const SongRoute = () => {
     }
   })
 
-  const handleUpdateDetails = (newVal: string | number | boolean, field: keyof Song) => {
+  const handleUpdateDetails = (newVal: string | number | boolean | typeof keyLetters, field: keyof Song) => {
     if (!song) { return }
     updateSongMutation.mutate({
       ...song,
@@ -67,22 +69,9 @@ export const SongRoute = () => {
         <FlexBox flexDirection="column" gap=".5rem" padding="1rem">
           <Label>Details</Label>
           <div className="SongRoute__details">
-            <FlexBox flexDirection="column" gap="0.25rem">
-              <LabelInput step={1} value={song?.length || 0} onSubmit={val => handleUpdateDetails(parseFloat(val as string), 'length')}>
-                {pluralize('minute', song?.length, true)}
-              </LabelInput>
-
-              <FlexBox alignItems="center" gap=".5rem">
-                <Button onClick={() => handleUpdateDetails(!song?.is_cover, 'is_cover')} kind="text" icon={song?.is_cover ? faCheckSquare : faSquare} />
-                <span>Is a cover</span>
-              </FlexBox>
-
-              <FlexBox alignItems="center" gap=".5rem">
-                <Button onClick={() => handleUpdateDetails(!song?.is_excluded, 'is_excluded')} kind="text" icon={song?.is_excluded ? faCheckSquare : faSquare} />
-                <span>Exclude from auto-generation</span>
-              </FlexBox>
-
-              <GridBox gap="1rem" gridTemplateColumns="1fr 1fr 2fr">
+            <FlexBox flexDirection="column" gap="1rem">
+              <GridBox gap="1rem" gridTemplateColumns="50px 1fr 1fr 1fr" alignItems="center">
+                <Label>Key</Label>
                 <Select
                   defaultValue={song?.key_letter && {label: song.key_letter, value: song.key_letter}}
                   menuPortalTarget={document.body}
@@ -102,6 +91,38 @@ export const SongRoute = () => {
                   }}
                 />
               </GridBox>
+
+              <GridBox gap="1rem" gridTemplateColumns="50px 1fr 1fr 1fr" alignItems="center">
+                <Label>Tempo</Label>
+                <Select
+                  defaultValue={song?.tempo && {label: capitalizeFirstLetter(song.tempo), value: song.tempo}}
+                  menuPortalTarget={document.body}
+                  options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
+                  onChange={option => {
+                    if (!option) return
+                    handleUpdateDetails(option.value, 'tempo')
+                  }}
+                />
+              </GridBox>
+
+              <GridBox gridTemplateColumns="50px 1fr" alignItems="center">
+                <Label>Length</Label>
+                <LabelInput step={1} value={song?.length || 0} onSubmit={val => handleUpdateDetails(parseFloat(val as string), 'length')}>
+                  {pluralize('minute', song?.length, true)}
+                </LabelInput>
+              </GridBox>
+
+              <FlexBox alignItems="center" gap=".5rem">
+                <Button onClick={() => handleUpdateDetails(!song?.is_cover, 'is_cover')} kind="text" icon={song?.is_cover ? faCheckSquare : faSquare}>
+                  <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
+                </Button>
+              </FlexBox>
+
+              <FlexBox alignItems="center" gap=".5rem">
+                <Button onClick={() => handleUpdateDetails(!song?.is_excluded, 'is_excluded')} kind="text" icon={song?.is_excluded ? faCheckSquare : faSquare}>
+                  <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Exclude from auto-generation</span>
+                </Button>
+              </FlexBox>
             </FlexBox>
           </div>
         </FlexBox>
@@ -128,9 +149,3 @@ export const SongRoute = () => {
     </div>
   )
 }
-
-const keyLetters = ['Ab', 'A', 'A#', 'Bb', 'B', 'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#']
-const majorMinorOptions = [
-  {label: 'Major', value: false},
-  {label: 'Minor', value: true},
-]

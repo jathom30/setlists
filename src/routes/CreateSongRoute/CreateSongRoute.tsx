@@ -1,15 +1,24 @@
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+import { faCheckSquare, faSave, faSquare } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { createSong } from "api";
-import { Button, FlexBox, Input, Loader } from "components";
+import { Button, FlexBox, GridBox, Input, Label, Loader } from "components";
 import { useGetCurrentBand } from "hooks";
-import React, { useState } from "react";
+import React, { MouseEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
+import { keyLetters, majorMinorOptions, tempos } from "songConstants";
+import { capitalizeFirstLetter } from "utils";
 
 export const CreateSongRoute = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [length, setLength] = useState(0)
+  const [keyLetter, setKeyLetter] = useState('')
+  const [isMinor, setIsMinor] = useState<boolean>()
+  const [tempo, setTempo] = useState('')
+  const [isCover, setIsCover] = useState(false)
+  const [isExcluded, setIsExcluded] = useState(false)
+
 
   const bandQuery = useGetCurrentBand()
 
@@ -19,19 +28,21 @@ export const CreateSongRoute = () => {
     }
   })
 
-  const handleSave = () => {
+  const handleSave = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
     createSongMutation.mutate({
       name,
       length,
       bands: [bandQuery.data?.id || ''],
-      is_cover: false,
-      is_excluded: false,
-      key_letter: 'X',
-      is_minor: false,
+      is_cover: isCover,
+      is_excluded: isExcluded,
+      key_letter: keyLetter,
+      is_minor: isMinor || false,
+      tempo
     })
   }
 
-  const isValid = name && length > 0
+  const isValid = name && length > 0 && keyLetter && isMinor !== undefined && tempo
 
   if (bandQuery.isLoading) {
     return (
@@ -45,9 +56,60 @@ export const CreateSongRoute = () => {
     <div className="CreateSongRoute">
       <FlexBox padding="1rem" gap="1rem" flexDirection="column">
         <h1>Create song</h1>
-        <Input label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
-        <Input label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
-        <Button kind="primary" icon={faSave} onClick={handleSave} isDisabled={!isValid}>Save song</Button>
+        <form action="submit">
+          <FlexBox gap="1rem" flexDirection="column">
+            <Input label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
+            
+            <Input label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
+            
+            <FlexBox flexDirection="column" gap=".25rem">
+              <Label>Key</Label>
+              <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+                <Select
+                  menuPortalTarget={document.body}
+                  options={keyLetters.map(key => ({label: key, value: key}))}
+                  onChange={option => {
+                    if (!option) return
+                    setKeyLetter(option.value)
+                  }}
+                />
+                <Select
+                  menuPortalTarget={document.body}
+                  options={majorMinorOptions}
+                  onChange={option => {
+                    if (!option) return
+                    setIsMinor(option.value)
+                  }}
+                />
+              </GridBox>
+            </FlexBox>
+            
+            <FlexBox flexDirection="column" gap=".25rem">
+              <Label>Tempo</Label>
+              <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+                <Select
+                  menuPortalTarget={document.body}
+                  options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
+                  onChange={option => {
+                    if (!option) return
+                    setTempo(option.value)
+                  }}
+                />
+              </GridBox>
+            </FlexBox>
+
+            <FlexBox flexDirection="column" alignItems="flex-start"  gap="1rem">
+              <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
+                <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
+              </Button>
+              <Button onClick={() => setIsExcluded(!isExcluded)} kind="text" icon={isExcluded ? faCheckSquare : faSquare}>
+                <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Exclude from auto-generation</span>
+              </Button>
+            </FlexBox>
+            
+            <Button type="submit" kind="primary" icon={faSave} onClick={handleSave} isDisabled={!isValid}>Save song</Button>
+          </FlexBox>
+        </form>
       </FlexBox>
     </div>
   )

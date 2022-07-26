@@ -32,4 +32,5 @@ export type Song = {
   notes?: string
   key_letter: string
   is_minor: boolean
+  tempo: string
 }
