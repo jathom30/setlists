@@ -1,0 +1,17 @@
+.AddNote {
+  &__text-btn {
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: inherit;
+    cursor: pointer;
+    border-radius: .25rem;
+    padding: .5rem;
+    &:hover {
+      background: var(--color-component-background-alt);
+    }
+  }
+  &__note-strand {
+    min-height: 1rem;
+  }
+}

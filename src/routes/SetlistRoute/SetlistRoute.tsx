@@ -5,13 +5,7 @@ import { SongsContext } from "context/SongsContext";
 
 export const SetlistRoute = () => {
   const setlistsQuery = useChildLists()
-  const songsContext = useContext(SongsContext)
-
-  const songsQuery = songsContext?.songsQuery
-
-  const getSong = (id: string) => {
-    return songsQuery?.data?.find(s => s.id === id)
-  }
+  const {songsQuery, getSong} = useContext(SongsContext) || {}
 
   const setlists = setlistsQuery.data?.sort((a, b) => {
     if (a.position_in_parent < b.position_in_parent) {
@@ -33,7 +27,7 @@ export const SetlistRoute = () => {
           Songs:
           <FlexBox flexDirection="column">
             {list.songs.map(id => {
-              const song = getSong(id)
+              const song = getSong && getSong(id)
               return (
                 <span key={id}>{song?.name} {song?.length}</span>
               )

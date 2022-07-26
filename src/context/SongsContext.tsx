@@ -7,7 +7,9 @@ import { useIdentityContext } from "react-netlify-identity";
 import { Song } from "typings";
 
 type SongsContextType = {
-  songsQuery: UseQueryResult<Song[], unknown>
+  songsQuery: UseQueryResult<Song[], unknown>;
+  getSong: (id: string) => Song | undefined;
+  isLoading: boolean
 }
 
 export const SongsContext = createContext<SongsContextType | null>(null)
@@ -29,8 +31,12 @@ export const SongsContextProvider = ({children}: {children: ReactNode}) => {
     }
   )
 
+  const getSong = (id: string) => songsQuery?.data?.find(s => s.id === id)
+
   const value = {
-    songsQuery
+    songsQuery,
+    getSong,
+    isLoading: songsQuery.isLoading
   }
 
   return (

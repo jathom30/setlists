@@ -2,7 +2,7 @@ import { faSignOut } from "@fortawesome/free-solid-svg-icons";
 import { useQuery } from "@tanstack/react-query";
 import { HeaderBox, FlexBox, Button } from "components";
 import { WindowDimsContext } from "context";
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { useIdentityContext } from "react-netlify-identity";
 import { Link, useNavigate } from "react-router-dom";
 import './Header.scss'
@@ -29,7 +29,10 @@ export const Header = () => {
   return (
     <div className="Header">
       <HeaderBox>
-        <Link to="/">Home</Link>
+        <FlexBox gap=".5rem" alignItems="center">
+          <Link to="/">Setlists</Link>
+          <Link to="/songs">Songs</Link>
+        </FlexBox>
         <FlexBox gap=".5rem" alignItems="center">
           <Link to="/user-settings">User</Link>
           <Button icon={faSignOut} isRounded onClick={() => logoutUserQuery.refetch()}>{isMobileWidth ? '' : 'Sign out'}</Button>

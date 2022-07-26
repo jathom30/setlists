@@ -1,0 +1,13 @@
+.SongTile {
+  background: var(--color-component-background);
+  padding: .5rem;
+  border-radius: .25rem;
+  box-shadow: var(--box-shadow);
+  transition: box-shadow .2s ease;
+  &:hover {
+    box-shadow: var(--box-shadow-hover);
+  }
+  &__warning-text {
+    color: var(--color-danger);
+  }
+}

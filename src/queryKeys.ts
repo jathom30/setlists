@@ -12,3 +12,4 @@ export const SETLISTS_QUERY = 'setlists'
 export const SETLIST_QUERY = 'setlist'
 
 export const SONGS_QUERY = 'songs'
+export const SONG_QUERY = 'song'

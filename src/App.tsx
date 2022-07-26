@@ -3,7 +3,7 @@ import './App.scss';
 import { Header, MaxHeightContainer } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
-import { AddBandRoute, LoginRoute, SetlistRoute, SetlistsRoute, UserRoute } from 'routes';
+import { AddBandRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user } = useIdentityContext()
@@ -46,6 +46,16 @@ function App() {
               <UserRoute />
             </ProtectedRoute>
           } />
+          <Route path="/songs" element={
+            <ProtectedRoute>
+              <SongsRoute />
+            </ProtectedRoute>
+          } />
+          <Route path="/songs/:songId" element={
+            <ProtectedRoute>
+              <SongRoute />
+            </ProtectedRoute>
+          } />
           <Route path="/setlists" element={
             <ProtectedRoute>
               <SetlistsRoute />
@@ -65,4 +75,3 @@ function App() {
 export default App;
 
 // TODO 
-// ! break BandSelect out of Header.tsx
