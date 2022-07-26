@@ -1,9 +1,47 @@
 import React, { useEffect } from 'react';
 import './App.scss';
-import { Header, MaxHeightContainer } from 'components';
+import { Header, MaxHeightContainer, RouteWrapper } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
 import { AddBandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
+
+const routes = [
+  {
+    key: 'user',
+    path: "/user-settings",
+    element: <UserRoute />
+  },
+  {
+    key: 'create-setlist',
+    path: "/create-setlist",
+    element: <CreateSetlistRoute />
+  },
+  {
+    key: 'create-song',
+    path: "/create-song",
+    element: <CreateSongRoute />
+  },
+  {
+    key: 'songs',
+    path: "/songs",
+    element: <SongsRoute />
+  },
+  {
+    key: 'song',
+    path: "/songs/:songId",
+    element: <SongRoute />
+  },
+  {
+    key: 'setlists',
+    path: "/setlists",
+    element: <SetlistsRoute />
+  },
+  {
+    key: 'setlist',
+    path: "/setlists/:id",
+    element: <SetlistRoute />
+  },
+]
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user } = useIdentityContext()
@@ -36,46 +74,21 @@ function App() {
         header={<Header />}
       >
         <Routes>
-        <Route path="/" element={
+          <Route path="/" element={
             <ProtectedRoute>
               <Navigate replace to="/setlists" />
             </ProtectedRoute>
           } />
-          <Route path="/user-settings" element={
-            <ProtectedRoute>
-              <UserRoute />
-            </ProtectedRoute>
-          } />
-          <Route path="/create-setlist" element={
-            <ProtectedRoute>
-              <CreateSetlistRoute />
-            </ProtectedRoute>
-          } />
-          <Route path="/create-song" element={
-            <ProtectedRoute>
-              <CreateSongRoute />
-            </ProtectedRoute>
-          } />
-          <Route path="/songs" element={
-            <ProtectedRoute>
-              <SongsRoute />
-            </ProtectedRoute>
-          } />
-          <Route path="/songs/:songId" element={
-            <ProtectedRoute>
-              <SongRoute />
-            </ProtectedRoute>
-          } />
-          <Route path="/setlists" element={
-            <ProtectedRoute>
-              <SetlistsRoute />
-            </ProtectedRoute>
-          } />
-          <Route path="/setlists/:id" element={
-            <ProtectedRoute>
-              <SetlistRoute />
-            </ProtectedRoute>
-          } />
+          {routes.map(route => (
+            <Route key={route.key} path={route.path} element={
+              <ProtectedRoute>
+                <RouteWrapper>
+                  {route.element}
+                </RouteWrapper>
+              </ProtectedRoute>
+            } />
+          ))}
+          
         </Routes>
       </MaxHeightContainer>
     </div>

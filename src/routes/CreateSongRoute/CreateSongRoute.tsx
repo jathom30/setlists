@@ -26,6 +26,8 @@ export const CreateSongRoute = () => {
       bands: [bandQuery.data?.id || ''],
       is_cover: false,
       is_excluded: false,
+      key_letter: 'X',
+      is_minor: false,
     })
   }
 

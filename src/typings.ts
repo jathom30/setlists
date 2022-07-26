@@ -30,4 +30,6 @@ export type Song = {
   is_cover: boolean
   is_excluded: boolean
   notes?: string
+  key_letter: string
+  is_minor: boolean
 }
