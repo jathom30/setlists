@@ -14,3 +14,5 @@ export const updateSong = (song: Song) => {
   const {id, ...fields} = song
   return songsBase.update([{id, fields: fields as unknown as FieldSet}])
 } 
+
+export const createSong = (song: Omit<Song, 'id'>) => songsBase.create([{fields: song as unknown as FieldSet}])

@@ -17,7 +17,7 @@ export const SongTile = ({song}: {song: Song}) => {
         </HeaderBox>
         <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))">
           <span>{pluralize('minute', song.length, true)}</span>
-          <span>Featured in {pluralize('setlist', song.setlists.length, true)}</span>
+          <span>Featured in {pluralize('setlist', song.setlists?.length, true)}</span>
         </GridBox>
       </FlexBox>
     </div>

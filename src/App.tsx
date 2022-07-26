@@ -3,7 +3,7 @@ import './App.scss';
 import { Header, MaxHeightContainer } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
-import { AddBandRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
+import { AddBandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user } = useIdentityContext()
@@ -44,6 +44,16 @@ function App() {
           <Route path="/user-settings" element={
             <ProtectedRoute>
               <UserRoute />
+            </ProtectedRoute>
+          } />
+          <Route path="/create-setlist" element={
+            <ProtectedRoute>
+              <CreateSetlistRoute />
+            </ProtectedRoute>
+          } />
+          <Route path="/create-song" element={
+            <ProtectedRoute>
+              <CreateSongRoute />
             </ProtectedRoute>
           } />
           <Route path="/songs" element={

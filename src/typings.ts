@@ -24,9 +24,9 @@ export type Setlist = {
 export type Song = {
   id: string
   length: number
-  setlists: number[]
+  setlists?: number[]
   name: string
-  bands: string
+  bands: string[]
   is_cover: boolean
   is_excluded: boolean
   notes?: string

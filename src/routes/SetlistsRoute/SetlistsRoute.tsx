@@ -38,14 +38,14 @@ export const SetlistsRoute = () => {
     <div className="SetlistsRoute">
       <HeaderBox>
         <h1>Setlists</h1>
-        {!noLists && <Button kind="primary">New setlist</Button>}
+        {!noLists && <Button kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')}>New setlist</Button>}
       </HeaderBox>
       {parentListsQuery.isLoading && <Loader size="l" />}
       {noLists ? (
         <FlexBox flexDirection="column" gap="1rem" alignItems="center">
           <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
           <span>Looks like you don't have any setlists made yet.</span>
-          <Button kind="primary" isRounded icon={faPlus} onClick={() => navigate('/create-new')}>Create your first setlist</Button>
+          <Button kind="primary" isRounded icon={faPlus} onClick={() => navigate('/create-setlist')}>Create your first setlist</Button>
         </FlexBox>
       ) : (
         <GridBox gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))">

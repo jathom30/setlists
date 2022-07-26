@@ -1,4 +1,6 @@
 export * from './AddBandRoute'
+export * from './CreateSetlistRoute'
+export * from './CreateSongRoute'
 export * from './LoginRoute'
 export * from './SetlistsRoute'
 export * from './SetlistRoute'
