@@ -1,7 +1,7 @@
 import { faCheckSquare, faSave, faSquare } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { createSong } from "api";
-import { Button, FlexBox, GridBox, Input, Label, Loader } from "components";
+import { AddNote, Button, FlexBox, GridBox, Input, Label, Loader } from "components";
 import { useGetCurrentBand } from "hooks";
 import React, { MouseEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ export const CreateSongRoute = () => {
   const [tempo, setTempo] = useState('')
   const [isCover, setIsCover] = useState(false)
   const [isExcluded, setIsExcluded] = useState(false)
+  const [note, setNote] = useState('')
 
 
   const bandQuery = useGetCurrentBand()
@@ -38,7 +39,8 @@ export const CreateSongRoute = () => {
       is_excluded: isExcluded,
       key_letter: keyLetter,
       is_minor: isMinor || false,
-      tempo
+      tempo,
+      notes: note
     })
   }
 
@@ -66,6 +68,7 @@ export const CreateSongRoute = () => {
               <Label>Key</Label>
               <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                 <Select
+                  placeholder="Select a key..."
                   menuPortalTarget={document.body}
                   options={keyLetters.map(key => ({label: key, value: key}))}
                   onChange={option => {
@@ -74,6 +77,7 @@ export const CreateSongRoute = () => {
                   }}
                 />
                 <Select
+                  placeholder="Major or minor..."
                   menuPortalTarget={document.body}
                   options={majorMinorOptions}
                   onChange={option => {
@@ -88,6 +92,7 @@ export const CreateSongRoute = () => {
               <Label>Tempo</Label>
               <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                 <Select
+                  placeholder="Select a tempo..."
                   menuPortalTarget={document.body}
                   options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
                   onChange={option => {
@@ -105,6 +110,11 @@ export const CreateSongRoute = () => {
               <Button onClick={() => setIsExcluded(!isExcluded)} kind="text" icon={isExcluded ? faCheckSquare : faSquare}>
                 <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Exclude from auto-generation</span>
               </Button>
+            </FlexBox>
+
+            <FlexBox flexDirection="column" gap=".25rem">
+              <Label>Notes</Label>
+              <AddNote onSave={setNote} />
             </FlexBox>
             
             <Button type="submit" kind="primary" icon={faSave} onClick={handleSave} isDisabled={!isValid}>Save song</Button>

@@ -12,13 +12,13 @@ export type ParentList = {
   sets?: string[]
   last_updated: string
   updated_by: string
+  bands: string[]
 }
 
 export type Setlist = {
   id: string
   songs: string[]
-  position_in_parent: number
-  parent_list: string
+  parent_list: string[]
 }
 
 export type Song = {

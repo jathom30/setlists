@@ -1,6 +1,6 @@
 import React, { MouseEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { AddBand, Button, DeleteWarning, FlexBox, Input, LabelInput, Loader, Modal, PasswordStrength } from "components";
+import { AddBand, Button, CollapsingButton, DeleteWarning, FlexBox, Input, LabelInput, Loader, Modal, PasswordStrength } from "components";
 import { faCheck, faCheckCircle, faCheckSquare, faCircle, faPlus, faSquare, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useGetBands } from "hooks";
 import { useIdentityContext } from "react-netlify-identity";
@@ -114,7 +114,7 @@ export const UserRoute = () => {
           <FlexBox flexDirection="column" gap="1rem">
             <FlexBox alignItems="center" justifyContent="space-between" gap="1rem">
               <h3>Associated Bands</h3>
-              <Button icon={faPlus} kind="primary" isRounded onClick={() => setShowNewBand(true)} />
+              <CollapsingButton icon={faPlus} kind="primary" onClick={() => setShowNewBand(true)} label="Add Band" />
             </FlexBox>
             {getBandsQuery.data?.map(band => (
               <FlexBox key={band.band_code} gap="1rem" alignItems="center" justifyContent="space-between">

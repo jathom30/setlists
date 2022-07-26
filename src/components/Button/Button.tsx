@@ -4,13 +4,15 @@ import { FlexBox } from 'components/Box';
 import * as React from 'react';
 import './Button.scss'
 
+export type ButtonKind = 'default' | 'primary' | 'danger' | 'text' | 'secondary'
+
 export const Button: React.FC<{
   buttonRef?: React.RefObject<HTMLButtonElement>
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void,
   isRounded?: boolean,
   isDisabled?: boolean
   type?: 'button' | 'submit' | 'reset'
-  kind?: 'default' | 'primary' | 'danger' | 'text' | 'secondary'
+  kind?: ButtonKind
   width?: string
   icon?: IconDefinition
   children?: React.ReactNode

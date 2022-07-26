@@ -1,6 +1,6 @@
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, FlexBox, HeaderBox, Input, Loader, SongTile } from "components";
+import { Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, SongTile } from "components";
 import { SongsContext } from "context/SongsContext";
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -31,9 +31,9 @@ export const SongsRoute = () => {
       <FlexBox flexDirection="column" gap="1rem" padding="1rem">
         <HeaderBox>
           <h1>Songs</h1>
-          <Button kind="primary" icon={faPlus} onClick={() => navigate('/create-song')}>Add Song</Button>
+          <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-song')} label="Add song" />
         </HeaderBox>
-        <Input value={search} onChange={setSearch} name="search" label="Search" />
+        <Input value={search} onChange={setSearch} name="search" label="Search" placeholder="Search by song title..." />
         {noSongs ? (
           <FlexBox flexDirection="column" gap="1rem" alignItems="center">
             <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />

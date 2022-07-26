@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getParentLists } from "api";
-import { Button, FlexBox, GridBox, HeaderBox, Loader, ParentListTile } from "components";
+import { Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, ParentListTile } from "components";
 import { PARENT_LISTS_QUERY } from "queryKeys";
 import { Link, useNavigate } from "react-router-dom";
 import { ParentList } from "typings";
@@ -11,6 +11,7 @@ import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const SetlistsRoute = () => {
+  const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const bandQuery = useGetCurrentBand()
 
@@ -20,42 +21,49 @@ export const SetlistsRoute = () => {
     [PARENT_LISTS_QUERY, bandId],
     async () => {
       const response = await getParentLists(bandId || '')
-      return response
+      return response.map(fieldSet => fieldSet.fields) as ParentList[]
     },
     {
       enabled: !!bandId,
     }
   )
 
-  const parentLists = parentListsQuery.data?.map(parentList => ({
-    id: parentList.id,
-    ...parentList.fields
-  })) as ParentList[] | undefined
+  const setlists = parentListsQuery.data
+
+  const sortedAndFilteredSetlists = setlists
+    ?.filter(setlist => setlist.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) { return -1}
+      else { return 1}
+    })
 
   const noLists = parentListsQuery.isSuccess && parentListsQuery.data.length === 0
 
   return (
     <div className="SetlistsRoute">
-      <HeaderBox>
-        <h1>Setlists</h1>
-        {!noLists && <Button kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')}>New setlist</Button>}
-      </HeaderBox>
-      {parentListsQuery.isLoading && <Loader size="l" />}
-      {noLists ? (
-        <FlexBox flexDirection="column" gap="1rem" alignItems="center">
-          <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
-          <span>Looks like you don't have any setlists made yet.</span>
-          <Button kind="primary" isRounded icon={faPlus} onClick={() => navigate('/create-setlist')}>Create your first setlist</Button>
-        </FlexBox>
-      ) : (
-        <GridBox gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))">
-          {parentLists?.map(parent => (
-            <Link key={parent.id} to={`/setlists/${parent.id}`}>
-              <ParentListTile parent={parent} />
-            </Link>
-          ))}
-        </GridBox>
-      )}
+      <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+        <HeaderBox>
+          <h1>Setlists</h1>
+          {!noLists && <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')} label="New setlist" />}
+        </HeaderBox>
+        <Input value={search} onChange={setSearch} name="search" label="Search" placeholder="Search by setlist name..." />
+        {parentListsQuery.isLoading && <Loader size="l" />}
+        {noLists ? (
+          <FlexBox flexDirection="column" gap="1rem" alignItems="center">
+            <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
+            <span>Looks like you don't have any setlists made yet.</span>
+            <Button kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')}>Create your first setlist</Button>
+          </FlexBox>
+        ) : (
+          <FlexBox flexDirection="column" gap="0.5rem">
+            {sortedAndFilteredSetlists?.map(parent => (
+              <Link key={parent.id} to={`/setlists/${parent.id}`}>
+                <ParentListTile parent={parent} />
+              </Link>
+            ))}
+          </FlexBox>
+        )}
+      </FlexBox>
     </div>
   )
 }

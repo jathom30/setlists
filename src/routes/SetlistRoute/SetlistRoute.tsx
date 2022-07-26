@@ -1,17 +1,13 @@
 import React, { useContext } from "react";
 import { useChildLists } from "hooks/useChildLists";
 import { FlexBox, Loader } from "components";
-import { SongsContext } from "context/SongsContext";
+import { SongsContext } from "context";
 
 export const SetlistRoute = () => {
   const setlistsQuery = useChildLists()
   const {songsQuery, getSong} = useContext(SongsContext) || {}
 
-  const setlists = setlistsQuery.data?.sort((a, b) => {
-    if (a.position_in_parent < b.position_in_parent) {
-      return -1
-    } else {return 1}
-  })
+  const setlists = setlistsQuery.data
 
   if (songsQuery?.isLoading) {
     return (
@@ -21,9 +17,9 @@ export const SetlistRoute = () => {
   return (
     <div className="SetlistRoute">
       <h1>Setlists / This list</h1>
-      {setlists?.map(list => (
+      {setlists?.map((list, i) => (
         <FlexBox key={list.id} gap="1rem" flexDirection="column">
-          <span>{list.position_in_parent + 1}</span>
+          <span>{i + 1}</span>
           Songs:
           <FlexBox flexDirection="column">
             {list.songs.map(id => {

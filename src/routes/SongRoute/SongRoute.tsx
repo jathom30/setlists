@@ -3,8 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteSong, updateSong } from "api";
 import { AddNote, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal } from "components";
 import { keyLetters, majorMinorOptions, tempos } from "songConstants";
-import { WindowDimsContext } from "context";
-import { SongsContext } from "context/SongsContext";
+import { WindowDimsContext, SongsContext } from "context";
 import pluralize from "pluralize";
 import { SONGS_QUERY } from "queryKeys";
 import React, { MouseEvent, useContext, useState } from "react";
@@ -70,47 +69,51 @@ export const SongRoute = () => {
           <Label>Details</Label>
           <div className="SongRoute__details">
             <FlexBox flexDirection="column" gap="1rem">
-              <GridBox gap="1rem" gridTemplateColumns="50px 1fr 1fr 1fr" alignItems="center">
+              <FlexBox flexDirection="column" gap=".25rem">
                 <Label>Key</Label>
-                <Select
-                  defaultValue={song?.key_letter && {label: song.key_letter, value: song.key_letter}}
-                  menuPortalTarget={document.body}
-                  options={keyLetters.map(key => ({label: key, value: key}))}
-                  onChange={option => {
-                    if (!option) return
-                    handleUpdateDetails(option.value, 'key_letter')
-                  }}
-                />
-                <Select
-                  defaultValue={{label: song?.is_minor ? 'Minor' : 'Major', value: song?.is_minor}}
-                  menuPortalTarget={document.body}
-                  options={majorMinorOptions}
-                  onChange={option => {
-                    if (!option) return
-                    handleUpdateDetails(option.value || false, 'is_minor')
-                  }}
-                />
-              </GridBox>
+                <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+                  <Select
+                    defaultValue={song?.key_letter && {label: song.key_letter, value: song.key_letter}}
+                    menuPortalTarget={document.body}
+                    options={keyLetters.map(key => ({label: key, value: key}))}
+                    onChange={option => {
+                      if (!option) return
+                      handleUpdateDetails(option.value, 'key_letter')
+                    }}
+                  />
+                  <Select
+                    defaultValue={{label: song?.is_minor ? 'Minor' : 'Major', value: song?.is_minor}}
+                    menuPortalTarget={document.body}
+                    options={majorMinorOptions}
+                    onChange={option => {
+                      if (!option) return
+                      handleUpdateDetails(option.value || false, 'is_minor')
+                    }}
+                  />
+                </GridBox>
+              </FlexBox>
 
-              <GridBox gap="1rem" gridTemplateColumns="50px 1fr 1fr 1fr" alignItems="center">
+              <FlexBox flexDirection="column" gap=".25rem">
                 <Label>Tempo</Label>
-                <Select
-                  defaultValue={song?.tempo && {label: capitalizeFirstLetter(song.tempo), value: song.tempo}}
-                  menuPortalTarget={document.body}
-                  options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
-                  onChange={option => {
-                    if (!option) return
-                    handleUpdateDetails(option.value, 'tempo')
-                  }}
-                />
-              </GridBox>
+                <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+                  <Select
+                    defaultValue={song?.tempo && {label: capitalizeFirstLetter(song.tempo), value: song.tempo}}
+                    menuPortalTarget={document.body}
+                    options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
+                    onChange={option => {
+                      if (!option) return
+                      handleUpdateDetails(option.value, 'tempo')
+                    }}
+                  />
+                </GridBox>
+              </FlexBox>
 
-              <GridBox gridTemplateColumns="50px 1fr" alignItems="center">
+              <FlexBox flexDirection="column" gap=".25rem">
                 <Label>Length</Label>
                 <LabelInput step={1} value={song?.length || 0} onSubmit={val => handleUpdateDetails(parseFloat(val as string), 'length')}>
                   {pluralize('minute', song?.length, true)}
                 </LabelInput>
-              </GridBox>
+              </FlexBox>
 
               <FlexBox alignItems="center" gap=".5rem">
                 <Button onClick={() => handleUpdateDetails(!song?.is_cover, 'is_cover')} kind="text" icon={song?.is_cover ? faCheckSquare : faSquare}>
