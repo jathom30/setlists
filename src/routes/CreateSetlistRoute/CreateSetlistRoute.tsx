@@ -1,40 +1,54 @@
-import React, { MouseEvent, useContext, useRef, useState } from "react";
-import {Button, FlexBox, Input} from 'components'
-import { SongsContext } from "context";
-// import Select, { GroupBase, SingleValue } from "react-select";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { Song } from "typings";
-import { useGetCurrentBand, useOnClickOutside } from "hooks";
-import Select, {SingleValue} from 'react-select'
-import { useMutation } from "@tanstack/react-query";
+import React, { MouseEvent, useContext, useState } from "react";
+import {Breadcrumbs, Button, FlexBox, Input, CreateSet, MaxHeightContainer} from 'components'
+import { useGetCurrentBand } from "hooks";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {v4 as uuid} from 'uuid'
 import { createParentList, createSetlist } from "api";
 import { useIdentityContext } from "react-netlify-identity";
+import { Song } from "typings";
+import { SongsContext } from "context";
+import { PARENT_LISTS_QUERY } from "queryKeys";
+import { useNavigate } from "react-router-dom";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { reorder } from "utils";
+import { faPlus, faSave } from "@fortawesome/free-solid-svg-icons";
+import './CreateSetlistRoute.scss'
 
 export const CreateSetlistRoute = () => {
   const {user} = useIdentityContext()
   const bandQuery = useGetCurrentBand()
   const [name, setName] = useState('')
-  const [setlist, setSetlist] = useState<Song[]>([])
+  const [sets, setSets] = useState<Record<string, Song[]>>({})
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const {songsQuery} = useContext(SongsContext) || {}
   const songs = songsQuery?.data
 
-  const songsNotInSetlist = songs?.filter(song => setlist.every(s => s.id !== song.id))
+  const songsInSets = Object.values(sets).reduce((all: Song[], songs) => [...all, ...songs], [])
+  const songsNotInSetlist = songs?.filter(song => songsInSets.every(s => s.id !== song.id))
 
-  const handleSelect = (song: Song) => {
-    setSetlist(prevSongs => (
-      [...prevSongs, song]
-    ))
-  }
+  const createSetlistMutation = useMutation(async (parentId: string) => {
+    const setIds = Object.keys(sets)
+    const responses = setIds.map(async id => {
+      const response = await createSetlist({
+        songs: sets[id].map(song => song.id),
+        parent_list: [parentId],
+      })
+      return response
+    })
+    return Promise.allSettled(responses)
+  }, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([PARENT_LISTS_QUERY])
+      navigate('/setlists')
+    }
+  })
 
-  const createSetlistMutation = useMutation(createSetlist)
   const createParentlistMutation = useMutation(createParentList, {
     onSuccess: (data) => {
       const parentId = data[0].id
-      createSetlistMutation.mutate({
-        songs: setlist.map(s => s.id),
-        parent_list: [parentId]
-      })
+      createSetlistMutation.mutate(parentId)
     }
   })
 
@@ -42,62 +56,151 @@ export const CreateSetlistRoute = () => {
     e.preventDefault()
     createParentlistMutation.mutate({
       name,
-      updated_by: user?.user_metadata.firstName,
+      updated_by: `${user?.user_metadata.firstName} ${user?.user_metadata.lastName}`,
       last_updated: (new Date()).toString(),
       bands: [bandQuery.data?.id || '']
     })
   }
 
-  const isValid = !!name && setlist.length > 0
+  const handleAddSongToSetlist = (song: Song, key: string) => {
+    setSets(prevSets => ({
+        ...prevSets,
+        [key]: [...prevSets[key], song]
+    }))
+  }
+
+  const handleNewSet = () => {
+    setSets(prevSets => {
+      return {...prevSets, [uuid()]: []}
+    })
+  }
+
+  const handleRemoveSet = (key: string) => {
+    setSets(prevSets => {
+      const newKeys = Object.keys(prevSets).filter(setKey => setKey !== key)
+      const remainingSets = newKeys.reduce((sets, setKey) => {
+        return {
+          ...sets,
+          [setKey]: prevSets[setKey]
+        }
+      }, {})
+      return remainingSets
+    })
+  }
+
+  const handleRemoveSongFromSet = (setKey: string, songId: string) => {
+    setSets(prevSets => {
+      return {
+        ...prevSets,
+        [setKey]: prevSets[setKey].filter(song => song.id !== songId)
+      }
+    })
+  }
+
+  const handleDragEnd = (result: DropResult) => {
+    const {type} = result
+    if (type === 'SONG') {
+      setSets(prevSets => {
+        if (!result.destination) {
+          return prevSets
+        }
+        const destinationSetlistId = result.destination.droppableId
+        const sourceSetlistId = result.source.droppableId
+
+        // if dragging and dropping within the same container
+        if (result.destination.droppableId === result.source.droppableId) {
+          return {
+            ...prevSets,
+            [sourceSetlistId]: reorder(
+              prevSets[sourceSetlistId],
+              result.source.index,
+              result.destination.index
+            )
+          }
+        }
+
+        // if dragging and dropping between two different containers
+        // get dragged song from draggableId
+        const draggedSong = songs?.find(song => song.id === result.draggableId)
+        if (!draggedSong) {
+          return prevSets
+        }
+        // remove id from source
+        const updatedSourceList = prevSets[sourceSetlistId].filter(song => song.id !== result.draggableId)
+        // add to destination
+        const updatedDestinationList = [
+          ...prevSets[destinationSetlistId].slice(0, result.destination.index),
+          draggedSong,
+          ...prevSets[destinationSetlistId].slice(result.destination.index)
+        ]
+        return {
+          ...prevSets,
+          [sourceSetlistId]: updatedSourceList,
+          [destinationSetlistId]: updatedDestinationList,
+        }
+      })
+    }
+  }
+
+  const eachSetHasSongs = Object.values(sets).every(set => set.length > 0)
+  const isValid = !!name && eachSetHasSongs
+  const isLoading = createParentlistMutation.isLoading || createSetlistMutation.isLoading
 
   return (
     <div className="CreateSetlistRoute">
-      <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-        <h1>Create setlist</h1>
-        <form action="submit">
-          <FlexBox  flexDirection="column" gap="1rem">
-            <Input label="Name" value={name} onChange={setName} name="name" placeholder="Setlist name" />
-            <hr />
-            {setlist.map((song, i) => (
-              <span key={song.id}>{i + 1}. {song.name}</span>
-            ))}
-            {songsNotInSetlist && <AddSong onSelect={handleSelect} songs={songsNotInSetlist} />}
-            <Button isDisabled={!isValid} kind="primary" type="submit" onClick={handleSubmit}>Create Setlist</Button>
+      <MaxHeightContainer
+        fullHeight
+        header={
+          <FlexBox padding="1rem">
+            <Breadcrumbs currentRoute={
+              <h1>Create setlist</h1>
+            } />
           </FlexBox>
-        </form>
-      </FlexBox>
+        }
+        footer={
+          Object.keys(sets).length > 0 && (
+            <FlexBox padding="1rem" flexDirection="column">
+              <Button
+                isDisabled={!isValid}
+                isLoading={isLoading}
+                kind="primary"
+                type="submit"
+                onClick={handleSubmit}
+                icon={!isLoading ? faSave : undefined}
+              >
+                Save Setlist
+              </Button>
+            </FlexBox>
+          )
+        }
+      >
+        <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+          <form action="submit">
+            <FlexBox  flexDirection="column" gap="1rem">
+              <Input label="Name" value={name} onChange={setName} name="name" placeholder="Setlist name..." />
+              <hr />
+              <DragDropContext onDragEnd={handleDragEnd}>
+                {Object.keys(sets)?.map((key, i) => (
+                  <CreateSet
+                    availableSongs={songsNotInSetlist}
+                    set={sets[key]}
+                    key={key}
+                    setKey={key}
+                    index={i + 1}
+                    isDisabledRemove={Object.keys(sets).length === 1}
+                    onRemove={() => handleRemoveSet(key)}
+                    onRemoveSong={(songId) => handleRemoveSongFromSet(key, songId)}
+                    onChange={(song) => handleAddSongToSetlist(song, key)}
+                  />
+                ))}
+              </DragDropContext>
+              {(name || Object.keys(sets).length > 0) && (
+                <Button kind="secondary" icon={faPlus} onClick={handleNewSet}>Create new set</Button>
+              )}
+            </FlexBox>
+          </form>
+        </FlexBox>
+      </MaxHeightContainer>
     </div>
-  )
-}
-
-const AddSong = ({onSelect, songs}: {onSelect: (song: Song) => void; songs: Song[]}) => {
-  const [showSelect, setShowSelect] =useState(false)
-  const selectRef = useRef<HTMLDivElement>(null)
-
-  useOnClickOutside([selectRef], () => {setShowSelect(false)})
-
-  const handleChange = (song: SingleValue<Song>) => {
-    if (!song) { return }
-    onSelect(song)
-    setShowSelect(false)
-  }
-
-  return (
-    <>
-    {showSelect ? (
-      <div ref={selectRef}>
-        <Select
-          placeholder="Select song to add..."
-          onChange={handleChange}
-          options={songs}
-          getOptionLabel={song => song.name}
-          getOptionValue={song => song.id}
-          defaultMenuIsOpen
-        />
-      </div>
-    ) : (
-      <Button icon={faPlus} onClick={() => setShowSelect(true)}>Add song</Button>
-    )}
-    </>
   )
 }

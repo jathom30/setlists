@@ -38,7 +38,7 @@ const routes = [
   },
   {
     key: 'setlist',
-    path: "/setlists/:id",
+    path: "/setlists/:setlistId",
     element: <SetlistRoute />
   },
 ]

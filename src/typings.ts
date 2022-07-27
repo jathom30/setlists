@@ -6,7 +6,7 @@ export type Band = {
   songs?: string[]
 }
 
-export type ParentList = {
+export type Setlist = {
   id: string
   name: string
   sets?: string[]
@@ -15,7 +15,7 @@ export type ParentList = {
   bands: string[]
 }
 
-export type Setlist = {
+export type Set = {
   id: string
   songs: string[]
   parent_list: string[]
@@ -33,4 +33,5 @@ export type Song = {
   key_letter: string
   is_minor: boolean
   tempo: string
+  is_starred: boolean
 }

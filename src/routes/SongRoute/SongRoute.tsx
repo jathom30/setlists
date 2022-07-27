@@ -29,7 +29,7 @@ export const SongRoute = () => {
     }
   })
 
-  const handleUpdateDetails = (newVal: string | number | boolean | typeof keyLetters, field: keyof Song) => {
+  const handleUpdateDetails = (newVal: string | number | boolean | string[], field: keyof Song) => {
     if (!song) { return }
     updateSongMutation.mutate({
       ...song,
@@ -124,6 +124,12 @@ export const SongRoute = () => {
               <FlexBox alignItems="center" gap=".5rem">
                 <Button onClick={() => handleUpdateDetails(!song?.is_excluded, 'is_excluded')} kind="text" icon={song?.is_excluded ? faCheckSquare : faSquare}>
                   <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Exclude from auto-generation</span>
+                </Button>
+              </FlexBox>
+              
+              <FlexBox alignItems="center" gap=".5rem">
+                <Button onClick={() => handleUpdateDetails(!song?.is_starred, 'is_starred')} kind="text" icon={song?.is_starred ? faCheckSquare : faSquare}>
+                  <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Always include during auto-generation</span>
                 </Button>
               </FlexBox>
             </FlexBox>

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getParentLists } from "api";
-import { Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, ParentListTile } from "components";
+import { Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, SetlistTile } from "components";
 import { PARENT_LISTS_QUERY } from "queryKeys";
 import { Link, useNavigate } from "react-router-dom";
-import { ParentList } from "typings";
+import { Setlist } from "typings";
 import './SetlistsRoute.scss'
 import { useGetCurrentBand } from "hooks";
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -21,7 +21,7 @@ export const SetlistsRoute = () => {
     [PARENT_LISTS_QUERY, bandId],
     async () => {
       const response = await getParentLists(bandId || '')
-      return response.map(fieldSet => fieldSet.fields) as ParentList[]
+      return response.map(fieldSet => fieldSet.fields) as Setlist[]
     },
     {
       enabled: !!bandId,
@@ -58,7 +58,7 @@ export const SetlistsRoute = () => {
           <FlexBox flexDirection="column" gap="0.5rem">
             {sortedAndFilteredSetlists?.map(parent => (
               <Link key={parent.id} to={`/setlists/${parent.id}`}>
-                <ParentListTile parent={parent} />
+                <SetlistTile parent={parent} />
               </Link>
             ))}
           </FlexBox>

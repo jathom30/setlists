@@ -5,6 +5,20 @@ import { SONGS_QUERY } from "queryKeys";
 import React, { createContext, ReactNode } from "react";
 import { useIdentityContext } from "react-netlify-identity";
 import { Song } from "typings";
+import { v4 as uuid} from 'uuid'
+
+export const missingSong: Song = {
+  id: uuid(),
+  length: 0,
+  name: 'SONG NOT FOUND',
+  bands: [''],
+  is_cover: false,
+  is_excluded: false,
+  key_letter: '',
+  is_minor: false,
+  tempo: '',
+  is_starred: false
+}
 
 type SongsContextType = {
   songsQuery: UseQueryResult<Song[], unknown>;
@@ -31,7 +45,7 @@ export const SongsContextProvider = ({children}: {children: ReactNode}) => {
     }
   )
 
-  const getSong = (id: string) => songsQuery?.data?.find(s => s.id === id)
+  const getSong = (id: string) => songsQuery?.data?.find(s => s.id === id) || missingSong
 
   const value = {
     songsQuery,

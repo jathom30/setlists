@@ -21,6 +21,7 @@
     "gotrue-js": "^0.9.29",
     "pluralize": "^8.0.0",
     "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^18.2.0",
     "react-netlify-identity": "^0.2.7",
     "react-router-dom": "^6.3.0",
@@ -28,6 +29,7 @@
     "react-select": "^5.4.0",
     "sass": "^1.54.0",
     "typescript": "^4.7.4",
+    "uuid": "^8.3.2",
     "web-vitals": "^2.1.4",
     "yarn": "^1.22.19"
   },
@@ -56,6 +58,8 @@
     ]
   },
   "devDependencies": {
-    "@types/pluralize": "^0.0.29"
+    "@types/pluralize": "^0.0.29",
+    "@types/react-beautiful-dnd": "^13.1.2",
+    "@types/uuid": "^8.3.4"
   }
 }

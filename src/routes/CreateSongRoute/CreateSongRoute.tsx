@@ -18,6 +18,7 @@ export const CreateSongRoute = () => {
   const [tempo, setTempo] = useState('')
   const [isCover, setIsCover] = useState(false)
   const [isExcluded, setIsExcluded] = useState(false)
+  const [isStarred, setIsStarred] = useState(false)
   const [note, setNote] = useState('')
 
 
@@ -40,7 +41,8 @@ export const CreateSongRoute = () => {
       key_letter: keyLetter,
       is_minor: isMinor || false,
       tempo,
-      notes: note
+      notes: note,
+      is_starred: isStarred,
     })
   }
 
@@ -52,6 +54,24 @@ export const CreateSongRoute = () => {
         <Loader size="l" />
       </FlexBox>
     )
+  }
+
+  const handleExcludeStar = (type: 'star' | 'exclude') => {
+    if (type === 'star') {
+      setIsStarred(prevStarred => {
+        if (!prevStarred) {
+          setIsExcluded(false)
+        }
+        return !prevStarred
+      })
+    } else {
+      setIsExcluded(prevExcluded => {
+        if (!prevExcluded) {
+          setIsStarred(false)
+        }
+        return !prevExcluded
+      })
+    }
   }
 
   return (
@@ -107,8 +127,11 @@ export const CreateSongRoute = () => {
               <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
                 <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
               </Button>
-              <Button onClick={() => setIsExcluded(!isExcluded)} kind="text" icon={isExcluded ? faCheckSquare : faSquare}>
+              <Button onClick={() => handleExcludeStar('exclude')} kind="text" icon={isExcluded ? faCheckSquare : faSquare}>
                 <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Exclude from auto-generation</span>
+              </Button>
+              <Button onClick={() => handleExcludeStar('star')} kind="text" icon={isStarred ? faCheckSquare : faSquare}>
+                <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Always include during auto-generation</span>
               </Button>
             </FlexBox>
 

@@ -1,0 +1,21 @@
+.Breadcrumbs {
+  &__crumb {
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-decoration: none;
+    color: var(--color-text);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    white-space: nowrap;
+    &--not-active {
+      font-weight: normal;
+      color: var(--color-text-subdued);
+      &:hover {
+        background: var(--color-component-background);
+      }
+    }
+  }
+  &__back {
+    color: var(--color-text-subdued);
+  }
+}

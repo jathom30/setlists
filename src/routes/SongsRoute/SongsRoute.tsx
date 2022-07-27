@@ -31,7 +31,7 @@ export const SongsRoute = () => {
       <FlexBox flexDirection="column" gap="1rem" padding="1rem">
         <HeaderBox>
           <h1>Songs</h1>
-          <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-song')} label="Add song" />
+          {!noSongs && <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-song')} label="Add song" />}
         </HeaderBox>
         <Input value={search} onChange={setSearch} name="search" label="Search" placeholder="Search by song title..." />
         {noSongs ? (
