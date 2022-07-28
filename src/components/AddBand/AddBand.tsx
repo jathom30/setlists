@@ -4,7 +4,7 @@ import { FlexBox, Button, Input } from "components";
 import React, { FormEvent, useState } from "react";
 import { useIdentityContext } from "react-netlify-identity";
 
-export const AddBand = () => {
+export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
   const {user, updateUser} = useIdentityContext()
   const [hasAccessCode, setHasAccessCode] = useState(false)
   const [bandCode, setBandCode] = useState('')
@@ -15,16 +15,17 @@ export const AddBand = () => {
 
   const updateUserMetaDataMutation = useMutation(updateUser, {
     onSuccess: (data) => {
-      console.log(data)
-      // window.location.reload()
+      onSuccess()
     }
   })
 
   const handleExistingBand = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    const uniqueBands = Array.from(new Set(...bands, bandCode))
+
     updateUserMetaDataMutation.mutate({ data: {
-      bandCode: [...bands, bandCode],
+      bandCode: uniqueBands,
       currentBand: bandCode
     }})
   }
@@ -61,7 +62,7 @@ export const AddBand = () => {
             <form action="submit" onSubmit={handleNewBand}>
               <FlexBox flexDirection="column" gap="1rem">
                 <Input label="Band name" value={bandName} onChange={setBandName} name="band-name" />
-                <Button kind="primary" type="submit" isDisabled={!bandName}>Create New</Button>
+                <Button kind="primary" type="submit" isDisabled={!bandName} isLoading={createBandMutation.isLoading}>Create New</Button>
               </FlexBox>
             </form>
           </>

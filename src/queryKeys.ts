@@ -1,5 +1,6 @@
 export const REGISTER_QUERY = 'register'
 export const LOGIN_QUERY = 'login'
+export const LOGOUT_QUERY = 'logout'
 export const PASSWORD_RECOVERY_QUERY = 'password-recovery'
 
 export const BAND_QUERY = 'band'

@@ -9,7 +9,6 @@ import { REGISTER_QUERY } from "queryKeys";
 export const SignUpForm = () => {
   const { signupUser } = useIdentityContext()
 
-  const [bandCode, setBandCode] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -21,7 +20,7 @@ export const SignUpForm = () => {
 
   const registerUserQuery = useQuery(
     [REGISTER_QUERY, email],
-    () => signupUser(email, password, {firstName, lastName, bandCode: [bandCode]}),
+    () => signupUser(email, password, {firstName, lastName}),
     {
       enabled: false,
       retry: false,
@@ -50,7 +49,6 @@ export const SignUpForm = () => {
           data-netlify="true"
         >
           <FlexBox flexDirection="column" gap="1rem">
-            <Input required label="Band code" value={bandCode} onChange={setBandCode} name="band-code" />
             <Input required label="First name" value={firstName} onChange={setFirstName} name="first-name" />
             <Input required label="Last name" value={lastName} onChange={setLastName} name="last-name" />
             <Input required label="Email" value={email} onChange={setEmail} name="email" />
@@ -64,7 +62,15 @@ export const SignUpForm = () => {
                 Don’t fill this out if you’re human: <input name="bot-field" />
               </label>
             </p>
-            <Button kind="primary" type="submit" onClick={handleRegister} isDisabled={isDisabledRegister}>Create Account</Button>
+            <Button
+              kind="primary"
+              type="submit"
+              onClick={handleRegister}
+              isDisabled={isDisabledRegister}
+              isLoading={registerUserQuery.isFetching}
+            >
+              Create Account
+            </Button>
             {registrationErr && <span className="SignUpForm__error-message">{registrationErr}</span>}
           </FlexBox>
         </form>

@@ -52,6 +52,7 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
 }
 
 function App() {
+  const { isLoggedIn } = useIdentityContext()
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,7 +72,7 @@ function App() {
     <div className="App">
       <MaxHeightContainer
         fullHeight
-        header={<Header />}
+        header={isLoggedIn && <Header />}
       >
         <Routes>
           <Route path="/" element={

@@ -1,3 +1,13 @@
 .CreateSetlistRoute {
   height: 100%;
+  &__type-btn {
+    border: none;
+    background: var(--color-component-background-alt);
+    color: var(--color-text-subdued);
+    border-radius: .25rem;
+    cursor: pointer;
+    &:hover {
+      background: var(--color-component-background-darken);
+    }
+  }
 }

@@ -4,3 +4,5 @@ export const majorMinorOptions = [
   {label: 'Major', value: false},
   {label: 'Minor', value: true},
 ]
+
+export const vibes = ['chill', 'bouncy', 'energetic']

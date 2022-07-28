@@ -91,12 +91,7 @@ export const LoginRoute = () => {
             <FlexBox flexDirection="column" gap="1rem">
               <Input label="email" value={email} onChange={setEmail} name="email" />
               <Input type="password" label="password" value={password} onChange={setPassword} name="password" />
-              <Button kind="primary" type="submit" onClick={handleLogin}>
-                <FlexBox gap=".5rem" alignItems="center">
-                  {loginUserQuery.isLoading && <span>Loading...</span>}
-                  Login
-                </FlexBox>
-              </Button>
+              <Button kind="primary" type="submit" onClick={handleLogin} isLoading={loginUserQuery.isFetching}>Login</Button>
               {loginErr && (
                 <FlexBox flexDirection="column" gap="1rem" alignItems="center">
                   <span className="LoginRoute__error-message">{loginErr}</span>

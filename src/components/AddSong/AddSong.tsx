@@ -17,6 +17,8 @@ export const AddSong = ({onSelect, songs}: {onSelect: (song: Song) => void; song
     setShowSelect(false)
   }
 
+  const hasAvailableSongs = songs.length > 0
+
   return (
     <>
     {showSelect ? (
@@ -30,9 +32,9 @@ export const AddSong = ({onSelect, songs}: {onSelect: (song: Song) => void; song
           defaultMenuIsOpen
         />
       </div>
-    ) : (
+    ) : hasAvailableSongs ? (
       <Button icon={faPlus} onClick={() => setShowSelect(true)}>Add song</Button>
-    )}
+    ) : null}
     </>
   )
 }

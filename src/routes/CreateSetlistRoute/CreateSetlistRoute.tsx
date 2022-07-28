@@ -1,19 +1,23 @@
-import React, { MouseEvent, useState } from "react";
-import {Breadcrumbs, Button, FlexBox, Input, CreateSet, MaxHeightContainer} from 'components'
+import React, { FormEvent, useState } from "react";
+import {Breadcrumbs, Button, FlexBox, CreateSet, MaxHeightContainer, Label} from 'components'
 import { useGetCurrentBand, useSongs } from "hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {v4 as uuid} from 'uuid'
 import { createParentList, createSetlist } from "api";
 import { useIdentityContext } from "react-netlify-identity";
-import { Song } from "typings";
+import { SetlistCreationType, Song } from "typings";
 import { PARENT_LISTS_QUERY } from "queryKeys";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { reorder } from "utils";
 import { faPlus, faSave } from "@fortawesome/free-solid-svg-icons";
 import './CreateSetlistRoute.scss'
+import { AutoGenSettings } from "./AutoGenSettings";
+import { ManualSetlistCreation } from "./ManualSetlistCreation";
+import { TypeSelection } from "./TypeSelection";
 
 export const CreateSetlistRoute = () => {
+  const [setlistType, setSetlistType] = useState<SetlistCreationType>()
   const {user} = useIdentityContext()
   const bandQuery = useGetCurrentBand()
   const [name, setName] = useState('')
@@ -26,6 +30,7 @@ export const CreateSetlistRoute = () => {
 
   const songsInSets = Object.values(sets).reduce((all: Song[], songs) => [...all, ...songs], [])
   const songsNotInSetlist = songs?.filter(song => songsInSets.every(s => s.id !== song.id))
+  const hasAvailableSongs = songsNotInSetlist && songsNotInSetlist?.length > 0
 
   const createSetlistMutation = useMutation(async (parentId: string) => {
     const setIds = Object.keys(sets)
@@ -51,8 +56,9 @@ export const CreateSetlistRoute = () => {
     }
   })
 
-  const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!isValid) return
     createParentlistMutation.mutate({
       name,
       updated_by: `${user?.user_metadata.firstName} ${user?.user_metadata.lastName}`,
@@ -142,7 +148,7 @@ export const CreateSetlistRoute = () => {
   }
 
   const eachSetHasSongs = Object.values(sets).every(set => set.length > 0)
-  const isValid = !!name && eachSetHasSongs
+  const isValid = !!name && eachSetHasSongs && Object.keys(sets).length > 0
   const isLoading = createParentlistMutation.isLoading || createSetlistMutation.isLoading
 
   return (
@@ -151,55 +157,56 @@ export const CreateSetlistRoute = () => {
         fullHeight
         header={
           <FlexBox padding="1rem">
-            <Breadcrumbs currentRoute={
-              <h1>Create setlist</h1>
-            } />
+            <Breadcrumbs
+              crumbs={[
+                {
+                  to: '/setlists',
+                  label: 'Setlists'
+                },
+                {
+                  to: '/create-setlist',
+                  label: 'Create setlist'
+                }
+              ]}
+            />
           </FlexBox>
-        }
-        footer={
-          Object.keys(sets).length > 0 && (
-            <FlexBox padding="1rem" flexDirection="column">
-              <Button
-                isDisabled={!isValid}
-                isLoading={isLoading}
-                kind="primary"
-                type="submit"
-                onClick={handleSubmit}
-                icon={!isLoading ? faSave : undefined}
-              >
-                Save Setlist
-              </Button>
-            </FlexBox>
-          )
         }
       >
         <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-          <form action="submit">
-            <FlexBox  flexDirection="column" gap="1rem">
-              <Input label="Name" value={name} onChange={setName} name="name" placeholder="Setlist name..." />
-              <hr />
-              <DragDropContext onDragEnd={handleDragEnd}>
-                {Object.keys(sets)?.map((key, i) => (
-                  <CreateSet
-                    availableSongs={songsNotInSetlist}
-                    set={sets[key]}
-                    key={key}
-                    setKey={key}
-                    index={i + 1}
-                    isDisabledRemove={Object.keys(sets).length === 1}
-                    onRemove={() => handleRemoveSet(key)}
-                    onRemoveSong={(songId) => handleRemoveSongFromSet(key, songId)}
-                    onChange={(song) => handleAddSongToSetlist(song, key)}
-                  />
-                ))}
-              </DragDropContext>
-              {(name || Object.keys(sets).length > 0) && (
-                <Button kind="secondary" icon={faPlus} onClick={handleNewSet}>Create new set</Button>
-              )}
+          <FlexBox flexDirection="column" gap=".25rem">
+            <Label>1. Setlist creation type</Label>
+            <TypeSelection onSelect={setSetlistType} selectedType={setlistType} />
+          </FlexBox>
+          {setlistType === 'auto' && (
+            <FlexBox flexDirection="column" gap=".25rem">
+              <Label>2. Auto-generation settings</Label>
+              <AutoGenSettings onSubmit={(stuff) => console.log(stuff)} />
             </FlexBox>
-          </form>
+          )}
+
+          {/* // ! should be able to use auto or manual gen songs here */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            {Object.keys(sets)?.map((key, i) => (
+              <CreateSet
+                availableSongs={songsNotInSetlist}
+                set={sets[key]}
+                key={key}
+                setKey={key}
+                index={i + 1}
+                isDisabledRemove={Object.keys(sets).length === 1}
+                onRemove={() => handleRemoveSet(key)}
+                onRemoveSong={(songId) => handleRemoveSongFromSet(key, songId)}
+                onChange={(song) => handleAddSongToSetlist(song, key)}
+              />
+            ))}
+          </DragDropContext>
         </FlexBox>
       </MaxHeightContainer>
     </div>
   )
 }
+
+// TODO
+// ! naming setlist should be last step
+// ? if manual, show as we had before
+// ? if auto, user selects auto specifications: include covers, include ballads, covers only, circle of fifths, vibe, etc

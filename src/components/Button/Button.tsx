@@ -1,8 +1,9 @@
-import { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import React from 'react';
+import { StandardLonghandProperties } from 'csstype'
+import { faCheckSquare, faSquare, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FlexBox } from 'components/Box';
 import { Loader } from 'components/Loader';
-import * as React from 'react';
 import './Button.scss'
 
 export type ButtonKind = 'default' | 'primary' | 'danger' | 'text' | 'secondary'
@@ -18,14 +19,15 @@ export const Button: React.FC<{
   width?: string
   icon?: IconDefinition
   children?: React.ReactNode
-}> = ({buttonRef, children, onClick, isRounded = false, kind = 'default', isLoading = false, type = 'button', isDisabled = false, width, icon}) => {
+  justifyContent?: StandardLonghandProperties['justifyContent']
+}> = ({buttonRef, children, onClick, isRounded = false, kind = 'default', isLoading = false, type = 'button', isDisabled = false, width, icon, justifyContent="center"}) => {
   const buttonKindClass = `Button__${kind}`
   return (
     <button
       ref={buttonRef}
       onClick={onClick}
       disabled={isDisabled || isLoading}
-      style={{width}}
+      style={{width, justifyContent}}
       type={type}
       className={`Button ${isRounded ? 'Button--rounded' : ''} ${isDisabled ? 'Button--disabled' : ''} ${buttonKindClass}`}
     >
@@ -35,5 +37,18 @@ export const Button: React.FC<{
         {children}
       </FlexBox>
     </button>
+  )
+}
+
+export const CheckButton = ({selected, onChange, label}: {selected: boolean; onChange: (val: boolean) => void; label: string}) => {
+  return (
+    <Button
+      icon={selected ? faCheckSquare : faSquare}
+      onClick={() => onChange(!selected)}
+      justifyContent="flex-start"
+      kind="text"
+    >
+      {label}
+    </Button>
   )
 }

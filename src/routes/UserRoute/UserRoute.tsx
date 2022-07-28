@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AddBand, Button, CollapsingButton, DeleteWarning, FlexBox, Input, LabelInput, Loader, Modal, PasswordStrength } from "components";
-import { faCheck, faCheckCircle, faCheckSquare, faCircle, faPlus, faSquare, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheckSquare, faPlus, faSquare, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useGetBands } from "hooks";
 import { useIdentityContext } from "react-netlify-identity";
 import { passwordStrength } from "utils";
@@ -151,7 +151,7 @@ export const UserRoute = () => {
               <h3>New band</h3>
               <Button onClick={() => setShowNewBand(false)} isRounded icon={faTimes} />
             </FlexBox>
-            <AddBand />
+            <AddBand onSuccess={() => setShowNewBand(false)} />
           </div>
         </Modal>
       )}

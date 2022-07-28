@@ -35,3 +35,5 @@ export type Song = {
   tempo: string
   is_starred: boolean
 }
+
+export type SetlistCreationType = 'auto' | 'manual'

@@ -1,28 +1,29 @@
 import { faCheckSquare, faSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteSong, updateSong } from "api";
-import { AddNote, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal } from "components";
+import { AddNote, Breadcrumbs, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal, Input, HeaderBox, CollapsingButton } from "components";
 import { keyLetters, majorMinorOptions, tempos } from "songConstants";
-import { WindowDimsContext } from "context";
 import pluralize from "pluralize";
 import { SONGS_QUERY } from "queryKeys";
-import React, { MouseEvent, useContext, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { Song } from "typings";
 import './SongRoute.scss'
 import { capitalizeFirstLetter } from "utils";
-import { useSongs } from "hooks";
+import { useDebounce, useSongs } from "hooks";
 
 export const SongRoute = () => {
   const { songId } = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const {getSong, songsQuery: { isLoading }} = useSongs()
-  const {isMobileWidth} = useContext(WindowDimsContext)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const song = getSong && getSong(songId || '')
+  const song = getSong(songId || '')
+  const [name, setName] = useState(song.name)
+  const debouncedName = useDebounce(name, 500)
+
 
   const updateSongMutation = useMutation(updateSong, {
     onSettled: () => {
@@ -38,9 +39,13 @@ export const SongRoute = () => {
     })
   }
 
+  useEffect(() => {
+    handleUpdateDetails(debouncedName, 'name')
+  }, [debouncedName])
+
   const deleteSongMutation = useMutation(deleteSong, {onSuccess: () => navigate('/songs')})
 
-  const handleDeleteContact = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleDeleteSong = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     deleteSongMutation.mutate(songId || '')
   }
@@ -53,16 +58,27 @@ export const SongRoute = () => {
     <div className="SongRoute">
       <MaxHeightContainer
         header={
-          <FlexBox padding={isMobileWidth ? "" : "1rem"} flexDirection="column" gap=".5rem">
-            {!isMobileWidth && <Label>Name</Label>}
-            <div className="SongRoute__header">
-              <FlexBox alignItems="center" justifyContent="space-between" gap="0.5rem">
-                <LabelInput value={song?.name || ''} onSubmit={val => handleUpdateDetails(val as string, 'name')}>
-                  <h1>{song?.name}</h1>
-                </LabelInput>
-                <Button isRounded icon={faTrash} onClick={() => setShowDeleteModal(true)} kind="danger" />
-              </FlexBox>
-            </div>
+          <FlexBox padding="1rem" flexDirection="column">
+            <HeaderBox>
+              <Breadcrumbs
+                crumbs={[
+                  {
+                    to: '/songs',
+                    label: 'Songs'
+                  },
+                  {
+                    to: `/songs/${song.id}`,
+                    label: song.name
+                  }
+                ]}
+              />
+              <CollapsingButton
+                icon={faTrash}
+                kind="danger"
+                onClick={() => setShowDeleteModal(true)}
+                label="Delete song"
+              />
+            </HeaderBox>
           </FlexBox>
         }
       >
@@ -70,6 +86,8 @@ export const SongRoute = () => {
           <Label>Details</Label>
           <div className="SongRoute__details">
             <FlexBox flexDirection="column" gap="1rem">
+              <Input value={name} onChange={setName} name="name" label="Name" />
+
               <FlexBox flexDirection="column" gap=".25rem">
                 <Label>Key</Label>
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
@@ -147,7 +165,7 @@ export const SongRoute = () => {
         <Modal offClick={() => setShowDeleteModal(false)}>
           <DeleteWarning
             onClose={() => setShowDeleteModal(false)}
-            onDelete={handleDeleteContact}
+            onDelete={handleDeleteSong}
             isLoading={deleteSongMutation.isLoading}
           >
             <span>

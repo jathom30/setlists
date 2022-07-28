@@ -11,6 +11,7 @@ export const AddNote = ({onSave, defaultNote}: {onSave: (newNote: string) => voi
 
   useOnClickOutside([newNoteRef, saveNoteRef], () => {
     setEdit(false)
+    setNote(defaultNote || '')
   })
 
   const handleSave = () => {
