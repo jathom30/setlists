@@ -7,7 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { WindowDimsContextProvider } from 'context';
 import { IdentityContextProvider } from 'react-netlify-identity';
-import { SongsContextProvider } from 'context/SongsContext';
 
 const queryClient = new QueryClient()
 
@@ -20,13 +19,11 @@ root.render(
   <React.StrictMode>
     <IdentityContextProvider url={url}>
       <QueryClientProvider client={queryClient}>
-        <SongsContextProvider>
-          <WindowDimsContextProvider>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
-          </WindowDimsContextProvider>
-        </SongsContextProvider>
+        <WindowDimsContextProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </WindowDimsContextProvider>
       </QueryClientProvider>
     </IdentityContextProvider>
   </React.StrictMode>

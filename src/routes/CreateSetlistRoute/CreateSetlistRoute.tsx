@@ -1,12 +1,11 @@
-import React, { MouseEvent, useContext, useState } from "react";
+import React, { MouseEvent, useState } from "react";
 import {Breadcrumbs, Button, FlexBox, Input, CreateSet, MaxHeightContainer} from 'components'
-import { useGetCurrentBand } from "hooks";
+import { useGetCurrentBand, useSongs } from "hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {v4 as uuid} from 'uuid'
 import { createParentList, createSetlist } from "api";
 import { useIdentityContext } from "react-netlify-identity";
 import { Song } from "typings";
-import { SongsContext } from "context";
 import { PARENT_LISTS_QUERY } from "queryKeys";
 import { useNavigate } from "react-router-dom";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
@@ -22,7 +21,7 @@ export const CreateSetlistRoute = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const {songsQuery} = useContext(SongsContext) || {}
+  const {songsQuery} = useSongs()
   const songs = songsQuery?.data
 
   const songsInSets = Object.values(sets).reduce((all: Song[], songs) => [...all, ...songs], [])

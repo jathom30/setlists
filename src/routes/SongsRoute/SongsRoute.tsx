@@ -1,8 +1,8 @@
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, SongTile } from "components";
-import { SongsContext } from "context/SongsContext";
-import React, { useContext, useState } from "react";
+import { useSongs } from "hooks";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import './SongsRoute.scss'
 
@@ -10,7 +10,7 @@ export const SongsRoute = () => {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
 
-  const {songsQuery} = useContext(SongsContext) || {}
+  const {songsQuery} = useSongs()
   const songs = songsQuery?.data
 
   const sortedAndFilteredSongs = songs

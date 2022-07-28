@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteSong, updateSong } from "api";
 import { AddNote, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal } from "components";
 import { keyLetters, majorMinorOptions, tempos } from "songConstants";
-import { WindowDimsContext, SongsContext } from "context";
+import { WindowDimsContext } from "context";
 import pluralize from "pluralize";
 import { SONGS_QUERY } from "queryKeys";
 import React, { MouseEvent, useContext, useState } from "react";
@@ -12,11 +12,12 @@ import Select from "react-select";
 import { Song } from "typings";
 import './SongRoute.scss'
 import { capitalizeFirstLetter } from "utils";
+import { useSongs } from "hooks";
 
 export const SongRoute = () => {
   const { songId } = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const {getSong, isLoading} = useContext(SongsContext) || {}
+  const {getSong, songsQuery: { isLoading }} = useSongs()
   const {isMobileWidth} = useContext(WindowDimsContext)
   const queryClient = useQueryClient()
   const navigate = useNavigate()

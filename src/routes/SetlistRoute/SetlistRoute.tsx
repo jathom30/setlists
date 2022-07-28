@@ -1,7 +1,6 @@
-import React, { useContext } from "react";
-import { useSets } from "hooks";
+import React from "react";
+import { useSets, useSongs } from "hooks";
 import { Breadcrumbs, CreateSet, FlexBox, Loader } from "components";
-import { missingSong, SongsContext } from "context";
 import { useQuery } from "@tanstack/react-query";
 import { PARENT_LIST_QUERY } from "queryKeys";
 import { useParams } from "react-router-dom";
@@ -22,7 +21,7 @@ export const SetlistRoute = () => {
   )
   const setlist = setlistQuery.data
 
-  const {songsQuery, getSong} = useContext(SongsContext) || {}
+  const {songsQuery, getSong} = useSongs()
   const {setsQuery, sets} = useSets()
   const hasSets = Object.keys(sets).length > 0
   
@@ -39,7 +38,7 @@ export const SetlistRoute = () => {
       </FlexBox>
     )
   }
-  const getSetSongs = (key: string) => sets?.[key].map(songId => getSong(songId) || missingSong)
+  const getSetSongs = (key: string) => sets?.[key].map(songId => getSong(songId))
   if (setsQuery.isSuccess) {
     return (
       <div className="SetlistRoute">
