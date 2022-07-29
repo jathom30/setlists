@@ -99,3 +99,4 @@ function App() {
 export default App;
 
 // TODO 
+// optimistic updates throughout setlist CRUD

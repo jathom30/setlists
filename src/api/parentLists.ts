@@ -8,3 +8,5 @@ export const getParentLists = (bandId: string) => parentListBase.select({filterB
 export const getParentList = (id: string) => parentListBase.find(id)
 
 export const createParentList = (parentList: Omit<Setlist, 'id'>) => parentListBase.create([{fields: parentList}])
+
+export const deleteParentList = (parentId: string) => parentListBase.destroy(parentId)

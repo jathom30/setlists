@@ -1,38 +1,34 @@
 import React, { useState } from "react";
 import { Button, CreateSet, FlexBox, Input } from "components";
-import { useGetCurrentBand, useSongs } from "hooks";
+import { useGetCurrentBand, useSetlist } from "hooks";
 import { faPlus, faSave } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
-import {v4 as uuid} from 'uuid'
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createParentList, createSetlist } from "api";
 import { PARENT_LISTS_QUERY } from "queryKeys";
-import { Song } from "typings";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { reorder } from "utils";
+import { DragDropContext } from "react-beautiful-dnd";
 import { useIdentityContext } from "react-netlify-identity";
 
 export const ManualSetlistCreation = () => {
   const {user} = useIdentityContext()
   const [name, setName] = useState('')
   const [step, setStep] = useState(1)
-  const [sets, setSets] = useState<Record<string, Song[]>>({'initial': []})
+
+  const {
+    addSongToSet,
+    removeSongFromSet,
+    addSet,
+    removeSet,
+    hasAvailableSongs,
+    songsNotInSetlist,
+    sets,
+    handleDragEnd
+  } = useSetlist()
+
   const bandQuery = useGetCurrentBand()
-  const {songsQuery} = useSongs()
-  const songs = songsQuery?.data
-
-  const songsInSets = Object.values(sets).reduce((all: Song[], songs) => [...all, ...songs], [])
-  const songsNotInSetlist = songs?.filter(song => songsInSets.every(s => s.id !== song.id))
-  const hasAvailableSongs = songsNotInSetlist && songsNotInSetlist?.length > 0
-
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const handleNewSet = () => {
-    setSets(prevSets => {
-      return {...prevSets, [uuid()]: []}
-    })
-  }
 
   const handleSubmit = () => {
     if (!isValid) return
@@ -72,80 +68,6 @@ export const ManualSetlistCreation = () => {
     }
   })
 
-  const handleAddSongToSetlist = (song: Song, key: string) => {
-    setSets(prevSets => ({
-        ...prevSets,
-        [key]: [...prevSets[key], song]
-    }))
-  }
-
-  const handleRemoveSet = (key: string) => {
-    setSets(prevSets => {
-      const newKeys = Object.keys(prevSets).filter(setKey => setKey !== key)
-      const remainingSets = newKeys.reduce((sets, setKey) => {
-        return {
-          ...sets,
-          [setKey]: prevSets[setKey]
-        }
-      }, {})
-      return remainingSets
-    })
-  }
-
-  const handleRemoveSongFromSet = (setKey: string, songId: string) => {
-    setSets(prevSets => {
-      return {
-        ...prevSets,
-        [setKey]: prevSets[setKey].filter(song => song.id !== songId)
-      }
-    })
-  }
-
-  const handleDragEnd = (result: DropResult) => {
-    const {type} = result
-    if (type === 'SONG') {
-      setSets(prevSets => {
-        if (!result.destination) {
-          return prevSets
-        }
-        const destinationSetlistId = result.destination.droppableId
-        const sourceSetlistId = result.source.droppableId
-
-        // if dragging and dropping within the same container
-        if (result.destination.droppableId === result.source.droppableId) {
-          return {
-            ...prevSets,
-            [sourceSetlistId]: reorder(
-              prevSets[sourceSetlistId],
-              result.source.index,
-              result.destination.index
-            )
-          }
-        }
-
-        // if dragging and dropping between two different containers
-        // get dragged song from draggableId
-        const draggedSong = songs?.find(song => song.id === result.draggableId)
-        if (!draggedSong) {
-          return prevSets
-        }
-        // remove id from source
-        const updatedSourceList = prevSets[sourceSetlistId].filter(song => song.id !== result.draggableId)
-        // add to destination
-        const updatedDestinationList = [
-          ...prevSets[destinationSetlistId].slice(0, result.destination.index),
-          draggedSong,
-          ...prevSets[destinationSetlistId].slice(result.destination.index)
-        ]
-        return {
-          ...prevSets,
-          [sourceSetlistId]: updatedSourceList,
-          [destinationSetlistId]: updatedDestinationList,
-        }
-      })
-    }
-  }
-
   const eachSetHasSongs = Object.values(sets).every(set => set.length > 0)
   const isValid = eachSetHasSongs && Object.keys(sets).length > 0 && (step === 2 ? !!name : true)
   const isLoading = createSetlistMutation.isLoading || createSetMutation.isLoading
@@ -162,14 +84,14 @@ export const ManualSetlistCreation = () => {
               setKey={key}
               index={i + 1}
               isDisabledRemove={Object.keys(sets).length === 1}
-              onRemove={() => handleRemoveSet(key)}
-              onRemoveSong={(songId) => handleRemoveSongFromSet(key, songId)}
-              onChange={(song) => handleAddSongToSetlist(song, key)}
+              onRemove={() => removeSet(key)}
+              onRemoveSong={(songId) => removeSongFromSet(key, songId)}
+              onChange={(song) => addSongToSet(song, key)}
             />
           ))}
         </DragDropContext>
         {hasAvailableSongs ? (
-          <Button kind="secondary" icon={faPlus} onClick={handleNewSet}>Create new set</Button>
+          <Button kind="secondary" icon={faPlus} onClick={addSet}>Create new set</Button>
         ) : (
           <FlexBox flexDirection="column" gap=".5rem" alignItems="center">
             <span>All songs in use</span>

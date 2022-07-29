@@ -12,7 +12,7 @@ export const UserSelect = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { logoutUser, user, updateUser } = useIdentityContext()
   const navigate = useNavigate()
-  const buttonRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useOnClickOutside([buttonRef, contentRef], () => setIsOpen(false))
@@ -101,8 +101,9 @@ export const UserSelect = () => {
           </div>
         }
       >
-        <div ref={buttonRef}>
+        <div>
           <CollapsingButton
+            buttonRef={buttonRef}
             icon={faEllipsisVertical}
             onClick={() => setIsOpen(!isOpen)}
             label="Settings"

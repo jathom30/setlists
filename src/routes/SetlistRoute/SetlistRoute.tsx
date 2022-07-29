@@ -1,16 +1,25 @@
-import React from "react";
-import { useSets, useSongs } from "hooks";
-import { Breadcrumbs, CreateSet, FlexBox, Loader, MaxHeightContainer } from "components";
-import { useQuery } from "@tanstack/react-query";
-import { PARENT_LIST_QUERY } from "queryKeys";
-import { useParams } from "react-router-dom";
-import { getParentList } from "api";
-import { Setlist, Song } from 'typings'
+import React, { useRef, useState } from "react";
+import { useOnClickOutside, useSetlist, useSongs } from "hooks";
+import { Breadcrumbs, Button, CollapsingButton, CreateSet, DeleteWarning, FlexBox, Group, HeaderBox, Loader, MaxHeightContainer, Modal, Popover } from "components";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { deleteParentList, deleteSetlist, getParentList, updateSetlists } from "api";
+import { Setlist } from 'typings'
 import { DragDropContext } from "react-beautiful-dnd";
 import './SetlistRoute.scss'
+import { faCog, faCopy, faEye, faEyeSlash, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export const SetlistRoute = () => {
   const { setlistId } = useParams()
+  const [deleteWarning, setDeleteWarning] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showReadOnly, setShowReadOnly] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  useOnClickOutside([buttonRef, contentRef], () => setShowSettings(false))
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const setlistQuery = useQuery(
     [PARENT_LIST_QUERY, setlistId],
@@ -22,16 +31,55 @@ export const SetlistRoute = () => {
   )
   const setlist = setlistQuery.data
 
-  const {songsQuery, getSong} = useSongs()
-  const {setsQuery, sets} = useSets()
-  const hasSets = Object.keys(sets).length > 0
-  
-  const songsInSets = sets && Object.values(sets).reduce((all: Song[], songs) => [...all, ...songsQuery?.data || []], [])
-  const songsNotInSetlist = songsQuery?.data?.filter(song => songsInSets?.every(s => s.id !== song.id))
+  const {songsQuery} = useSongs()
+  const {
+    sets,
+    addSet,
+    removeSet,
+    removeSongFromSet,
+    addSongToSet,
+    handleDragEnd,
+    songsNotInSetlist,
+    setsQuery,
+    hasAvailableSongs,
+    hasChanged,
+    setHasChanged,
+  } = useSetlist()
+
+  const updateSetsMutation = useMutation(updateSetlists, {onSuccess: () => setHasChanged(false)})
+
+  const handleUpdate = () => {
+    updateSetsMutation.mutate(sets)
+  }
+
+  const handleSaveAsNew = () => {
+    alert('not yet working')
+  }
+
+  const deleteSetsMutation = useMutation(async () => {
+    const setIds = Object.keys(sets)
+    const responses = setIds.map(async id => {
+      const response = await deleteSetlist(id)
+      return response
+    })
+    return Promise.allSettled(responses)
+  }, {onSuccess: () => navigate('/')})
+
+  const deleteSetlistMutation = useMutation(deleteParentList, {
+    onSuccess: () => {
+      deleteSetsMutation.mutate()
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries([SETLISTS_QUERY])
+    }
+  })
+
+  const handleDelete = () => {
+    deleteSetlistMutation.mutate(setlist?.id || '')
+  }
 
   const isLoading = songsQuery?.isLoading || setsQuery.isLoading || setlistQuery.isLoading
 
-  if (!getSong) { return null }
   if (isLoading) {
     return (
       <FlexBox alignItems="center" justifyContent="center" padding="1rem">
@@ -39,13 +87,13 @@ export const SetlistRoute = () => {
       </FlexBox>
     )
   }
-  const getSetSongs = (key: string) => sets?.[key].map(songId => getSong(songId))
-  if (setsQuery.isSuccess) {
-    return (
-      <div className="SetlistRoute">
-        <MaxHeightContainer
-          header={
-            <FlexBox padding="1rem">
+  return (
+    <div className="SetlistRoute">
+      <MaxHeightContainer
+        fullHeight
+        header={
+          <FlexBox padding="1rem" flexDirection="column">
+            <HeaderBox>
               <Breadcrumbs
                 crumbs={[
                   {
@@ -58,31 +106,104 @@ export const SetlistRoute = () => {
                   }
                 ]}
               />
+              <Popover
+                align="end"
+                position={['bottom']}
+                isOpen={showSettings}
+                content={
+                  <div className="SetlistRoute__content" ref={contentRef}>
+                    <FlexBox flexDirection="column" padding="1rem" gap=".5rem">
+                      <Button
+                        justifyContent="flex-start"
+                        icon={showReadOnly ? faEyeSlash : faEye}
+                        kind="secondary"
+                        onClick={() => {setShowReadOnly(!showReadOnly); setShowSettings(false)}}
+                      >
+                        {showReadOnly ? 'Edit view' : 'Read only view'}
+                      </Button>
+                      <Button
+                        justifyContent="flex-start"
+                        icon={faTrash}
+                        kind="danger"
+                        onClick={() => {setDeleteWarning(true); setShowSettings(false)}}
+                      >
+                        Delete setlist
+                      </Button>
+                    </FlexBox>
+                  </div>
+                }
+              >
+                <div>
+                  <CollapsingButton buttonRef={buttonRef} icon={faCog} label="Settings" onClick={() => setShowSettings(!showSettings)} />
+                </div>
+              </Popover>
+            </HeaderBox>
+          </FlexBox>
+        }
+        footer={
+          hasChanged && (
+            <FlexBox paddingBottom="1rem" flexDirection="column">
+              <Group>
+                <FlexBox gap="1rem" padding="1rem" justifyContent="flex-end">
+                  <Button onClick={() => {setsQuery.refetch(); setHasChanged(false)}}>Cancel</Button>
+                  <Button onClick={handleUpdate} isLoading={updateSetsMutation.isLoading} icon={faSave} kind="primary">Save</Button>
+                  <Button onClick={handleSaveAsNew} icon={faCopy} kind="secondary">Save as new</Button>
+                </FlexBox>
+              </Group>
             </FlexBox>
-          }
-        >
-          <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-            {hasSets && (
-              <DragDropContext onDragEnd={() => {}}>
+          )
+        }
+      >
+        <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+          {showReadOnly ? (
+            <FlexBox flexDirection="column" gap="1rem">
+              {Object.keys(sets).map((key, index) => (
+                <FlexBox key={key} flexDirection="column">
+                  <h5>Set {index + 1}</h5>
+                  {sets[key].map((song, i) => (
+                    <h2 key={song.id}>{i+1}. {song.name}</h2>
+                  ))}
+                </FlexBox>
+              ))}
+            </FlexBox>
+          ) : (
+            <>
+              <DragDropContext onDragEnd={handleDragEnd}>
                 {Object.keys(sets).map((key, i) => (
                   <CreateSet
                     availableSongs={songsNotInSetlist}
-                    set={getSetSongs(key)}
+                    set={sets[key]}
                     key={key}
                     setKey={key}
                     index={i + 1}
                     isDisabledRemove={Object.keys(sets).length === 1}
-                    onRemove={() => console.log(key)}
-                    onRemoveSong={songId => console.log(songId)}
-                    onChange={song => console.log(song)}
+                    onRemove={() => removeSet(key)}
+                    onRemoveSong={songId => removeSongFromSet(key, songId)}
+                    onChange={song => addSongToSet(song, key)}
                   />
                 ))}
               </DragDropContext>
-            )}
-          </FlexBox>
-        </MaxHeightContainer>
-      </div>
-    )
-  }
-  return null
+              {hasAvailableSongs ? (
+                <Button kind="secondary" icon={faPlus} onClick={addSet}>Create new set</Button>
+              ) : (
+                <FlexBox flexDirection="column" gap=".5rem" alignItems="center">
+                  <span>All songs in use</span>
+                  <Link to="/create-song">
+                    <Button kind="secondary" icon={faPlus}>Create new song</Button>
+                  </Link>
+                </FlexBox>
+              )}
+            </>
+          )}
+        </FlexBox>
+      </MaxHeightContainer>
+      {deleteWarning && (
+        <Modal offClick={() => setDeleteWarning(false)}>
+          <DeleteWarning onClose={() => setDeleteWarning(false)} onDelete={handleDelete} isLoading={deleteSetlistMutation.isLoading || deleteSetsMutation.isLoading}>
+            <span>This will perminantly delete <strong>{setlist?.name}</strong>.</span>
+          </DeleteWarning>
+        </Modal>
+      )}
+    </div>
+  )
 }

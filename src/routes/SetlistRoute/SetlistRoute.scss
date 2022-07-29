@@ -1,3 +1,8 @@
 .SetlistRoute {
   height: 100%;
+  &__content {
+    background: var(--color-component-background);
+    border-radius: .25rem;
+  }
+  
 }
