@@ -104,7 +104,7 @@ export const UserSelect = () => {
         <div ref={buttonRef}>
           <CollapsingButton
             icon={faEllipsisVertical}
-            onClick={() => setIsOpen(true)}
+            onClick={() => setIsOpen(!isOpen)}
             label="Settings"
             kind="secondary"
           />

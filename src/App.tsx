@@ -13,7 +13,7 @@ const routes = [
   },
   {
     key: 'create-setlist',
-    path: "/create-setlist",
+    path: "/create-setlist/*",
     element: <CreateSetlistRoute />
   },
   {

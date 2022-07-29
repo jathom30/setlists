@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, AddSong } from "components";
 import pluralize from "pluralize";
 import { Song } from "typings";
@@ -18,9 +18,22 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
   isDisabledRemove: boolean;
   index: number;
 }) => {
+  const [enabled, setEnabled] = useState(false)
   const setLength = set?.reduce((total, song) => {
     return total += song.length
   }, 0)
+
+  // React 18 currrently has a bug with StrictMode that is effecting react-beautiful-dnd
+  // https://github.com/atlassian/react-beautiful-dnd/issues/2399#issuecomment-1167427762
+  useEffect(() => {
+    const animation = requestAnimationFrame(() => setEnabled(true))
+    return () => {
+      cancelAnimationFrame(animation)
+      setEnabled(false)
+    }
+  }, [])
+
+  if (!enabled) { return null}
 
   return (
     <div className="CreateSet">

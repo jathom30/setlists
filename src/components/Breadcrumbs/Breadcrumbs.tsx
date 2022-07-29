@@ -1,9 +1,9 @@
-import React, { ReactNode } from "react";
+import React, { Fragment, ReactNode } from "react";
 import { FlexBox } from "components";
 import { Link, useLocation } from "react-router-dom";
 import './Breadcrumbs.scss'
 
-type Breadcrumb = {
+export type Breadcrumb = {
   to: string
   label: string
 }
@@ -17,19 +17,21 @@ export const Breadcrumbs = ({crumbs, currentRoute}: {crumbs?: Breadcrumb[]; curr
       <FlexBox gap=".5rem" alignItems="center">
         {crumbs?.map(crumb => {
           if (isCurrentRoute(crumb.to)) {
-            return <h1>{crumb.label}</h1>
+            return <h3 key={crumb.to}>{crumb.label}</h3>
           }
           return(
-            <>
-              <Link key={crumb.to} to={crumb.to}>
-                <h1 className="Breadcrumbs__crumb">
+            <Fragment key={crumb.to}>
+              <Link to={crumb.to}>
+                <h3 className="Breadcrumbs__crumb">
                   {crumb.label}
-                </h1>
+                </h3>
               </Link>
               {'/'}
-            </>
+            </Fragment>
         )})}
       </FlexBox>
     </div>
   )
 }
+
+// TODO mobile breadcrumbs
