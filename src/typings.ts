@@ -37,3 +37,14 @@ export type Song = {
 }
 
 export type SetlistCreationType = 'auto' | 'manual'
+
+export type SetlistFilters = {
+  noCovers: boolean
+  onlyCovers: boolean
+  noBallads: boolean
+}
+export type SetlistSettings = {
+  filters: SetlistFilters
+  setCount: number
+  setLength: number
+}

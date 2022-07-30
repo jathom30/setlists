@@ -1,21 +1,34 @@
-import React from "react";
-import {Breadcrumbs, FlexBox, MaxHeightContainer, Breadcrumb} from 'components'
+import React, { useState } from "react";
+import {Breadcrumbs, FlexBox, MaxHeightContainer} from 'components'
 import { Route, Routes, useLocation } from "react-router-dom";
 import './CreateSetlistRoute.scss'
 import { ManualSetlistCreation } from "./ManualSetlistCreation";
 import { TypeSelection } from "./TypeSelection";
 import { AutoSetlistCreation } from "./AutoSetlistCreation";
+import { Song } from "typings";
+import { AutoGenTempDisplay } from "./AutoGenTempDisplay";
 
 export const CreateSetlistRoute = () => {
   const location = useLocation()
+  const [autoSets, setAutoSets] = useState<Record<string, Song[]>>({})
+  const [autoName, setAutoName] = useState('')
 
-  const autoCrumb: Breadcrumb = {
+  const autoCrumb = {
     to: '/create-setlist/auto',
     label: 'Auto-generate'
+  }
+  const tempCrumb = {
+    to: '/create-setlist/auto/temp',
+    label: 'Temp'
   }
   const manualCrumb = {
     to: '/create-setlist/manual',
     label: 'Manual'
+  }
+
+  const handleSubmitAuto = (sets: Record<string, Song[]>, name: string) => {
+    setAutoSets(sets)
+    setAutoName(name)
   }
 
   return (
@@ -36,6 +49,7 @@ export const CreateSetlistRoute = () => {
                 },
                 ...(location.pathname.includes('auto') ? [autoCrumb] : []),
                 ...(location.pathname.includes('manual') ? [manualCrumb] : []),
+                ...(location.pathname.includes('temp') ? [tempCrumb] : [])
               ]}
             />
           </FlexBox>
@@ -43,7 +57,8 @@ export const CreateSetlistRoute = () => {
       >
         <Routes>
           <Route path="/" element={<TypeSelection />} />
-          <Route path="/auto" element={<AutoSetlistCreation onCreate={console.log} />} />
+          <Route path="/auto" element={<AutoSetlistCreation onSubmit={handleSubmitAuto} />} />
+          <Route path="/auto/temp" element={<AutoGenTempDisplay initialSets={autoSets} name={autoName} />} />
           <Route path="/manual" element={<ManualSetlistCreation />} />
         </Routes>
       </MaxHeightContainer>

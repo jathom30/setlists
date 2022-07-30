@@ -9,15 +9,11 @@ import { reorder } from "utils"
 import {v4 as uuid} from 'uuid'
 import { useSongs } from "./useSongs"
 
-export const useSetlist = () => {
+export const useSetlist = (initialSets?: Record<string, Song[]>) => {
   const { setlistId } = useParams()
-  const [sets, setSets] = useState<Record<string, Song[]>>({'initial': []})
+  const [sets, setSets] = useState<Record<string, Song[]>>(initialSets || {'initial': []})
   const {songsQuery, getSong} = useSongs()
   const [hasChanged, setHasChanged] = useState(false)
-
-  // useEffect(() => {
-  //   console.log(songsQuery.data)
-  // }, [songsQuery])
 
   const setsQuery = useQuery(
     [SETLISTS_QUERY, setlistId],

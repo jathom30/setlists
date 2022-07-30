@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import { Button, CreateSet, FlexBox, Input } from "components";
-import { useGetCurrentBand, useSetlist } from "hooks";
+import { useSetlist } from "hooks";
 import { faPlus, faSave } from "@fortawesome/free-solid-svg-icons";
-import { Link, useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createParentList, createSetlist } from "api";
-import { PARENT_LISTS_QUERY } from "queryKeys";
+import { Link } from "react-router-dom";
 import { DragDropContext } from "react-beautiful-dnd";
-import { useIdentityContext } from "react-netlify-identity";
+import { useCreateSetlist } from "hooks/useCreateSetlist";
 
 export const ManualSetlistCreation = () => {
-  const {user} = useIdentityContext()
   const [name, setName] = useState('')
   const [step, setStep] = useState(1)
 
@@ -25,9 +21,7 @@ export const ManualSetlistCreation = () => {
     handleDragEnd
   } = useSetlist()
 
-  const bandQuery = useGetCurrentBand()
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  const {onSubmit, isLoading} = useCreateSetlist(sets, name)
 
 
   const handleSubmit = () => {
@@ -36,45 +30,15 @@ export const ManualSetlistCreation = () => {
       setStep(2)
       return
     }
-    createSetlistMutation.mutate({
-      name,
-      updated_by: `${user?.user_metadata.firstName} ${user?.user_metadata.lastName}`,
-      last_updated: (new Date()).toString(),
-      bands: [bandQuery.data?.id || '']
-    })
+    onSubmit()
   }
-
-  const createSetMutation = useMutation(async (parentId: string) => {
-    const setIds = Object.keys(sets)
-    const responses = setIds.map(async id => {
-      const response = await createSetlist({
-        songs: sets[id].map(song => song.id),
-        parent_list: [parentId],
-      })
-      return response
-    })
-    return Promise.allSettled(responses)
-  }, {
-    onSuccess: () => {
-      queryClient.invalidateQueries([PARENT_LISTS_QUERY])
-      navigate('/setlists')
-    }
-  })
-
-  const createSetlistMutation = useMutation(createParentList, {
-    onSuccess: (data) => {
-      const parentId = data[0].id
-      createSetMutation.mutate(parentId)
-    }
-  })
 
   const eachSetHasSongs = Object.values(sets).every(set => set.length > 0)
   const isValid = eachSetHasSongs && Object.keys(sets).length > 0 && (step === 2 ? !!name : true)
-  const isLoading = createSetlistMutation.isLoading || createSetMutation.isLoading
 
   return (
     <div className="ManualSetlistCreation">
-      <FlexBox flexDirection="column" gap="1rem">
+      <FlexBox flexDirection="column" gap="1rem" padding="1rem">
         <DragDropContext onDragEnd={handleDragEnd}>
           {Object.keys(sets)?.map((key, i) => (
             <CreateSet

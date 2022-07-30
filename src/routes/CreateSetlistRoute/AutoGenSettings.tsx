@@ -3,8 +3,9 @@ import { CheckButton, FlexBox, GridBox, Label } from "components";
 import Select from "react-select";
 import { vibes } from "songConstants";
 import { capitalizeFirstLetter } from "utils";
+import { SetlistFilters } from "typings";
 
-export const AutoGenSettings = ({onChange}: {onChange: (form: any) => void}) => {
+export const AutoGenSettings = ({onChange}: {onChange: (filters: SetlistFilters) => void}) => {
   const [noCovers, setNoCovers] = useState(false)
   const [onlyCovers, setOnlyCovers] = useState(false)
   const [noBallads, setNoBallads] = useState(false)
@@ -30,8 +31,8 @@ export const AutoGenSettings = ({onChange}: {onChange: (form: any) => void}) => 
       noCovers,
       onlyCovers,
       noBallads,
-      fifths,
-      vibe,
+      // fifths,
+      // vibe,
     })
   }, [fifths, noBallads, noCovers, onChange, onlyCovers, vibe])
 

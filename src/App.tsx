@@ -48,8 +48,6 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
 
   const hasBands = user?.user_metadata.bandCode?.length > 0
 
-  useEffect(() => {console.log(user)}, [user])
-
   return isLoggedIn
     ? !isConfirmedUser
     ? (
@@ -114,4 +112,5 @@ export default App;
 // TODO 
 // optimistic updates throughout setlist CRUD
 // set update bug
-// auto-gen - basic to start
+// ? save settings of auto-gen when going back to prev route
+// ! organize "settings" better in autosetlistcreation

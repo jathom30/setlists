@@ -1,23 +1,33 @@
+import React, { MouseEvent, ReactNode, useState } from "react";
 import { Button, FlexBox, Group, Input, Label } from "components";
-import React, { ReactNode, useState } from "react";
+import { useSongs } from "hooks";
 import { handleGreaterThanZeroChange } from "utils";
+import { autoGenSetlist } from "utils/setlists";
 import { AutoGenSettings } from "./AutoGenSettings";
+import { Song, SetlistFilters } from "typings";
+import { useNavigate } from "react-router-dom";
 
-export const AutoSetlistCreation = ({onCreate}: {onCreate: (autoSettings: any) => void}) => {
+export const AutoSetlistCreation = ({onSubmit}: {onSubmit: (sets: Record<string, Song[]>, name: string) => void}) => {
   const [step, setStep] = useState(1)
   const [setLength, setSetLength] = useState(45)
   const [numberOfSets, setNumberOfSets] = useState(1)
-  const [settings, setSettings] = useState({})
-
+  const [settings, setSettings] = useState<SetlistFilters>()
+  const {songsQuery} = useSongs()
   const [name, setName] = useState('')
+  const navigate = useNavigate()
 
-  const handleNext = () => {
+  const handleNext = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
     if (!name) {
       setStep(prevStep => prevStep + 1)
     } else {
-      onCreate({
-        name, setLength, numberOfSets, ...settings
-      })
+      if (!songsQuery.isSuccess || !settings) { return }
+      onSubmit(autoGenSetlist(songsQuery.data, {
+        filters: settings,
+        setCount: numberOfSets,
+        setLength,
+      }), name)
+      navigate('temp')
     }
   }
 
@@ -32,27 +42,29 @@ export const AutoSetlistCreation = ({onCreate}: {onCreate: (autoSettings: any) =
 
   return (
     <div className="AutoSetlistCreation">
-      <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-        {step >= 1 && (
-          <Step number={1} label="Set details">
-            <FlexBox flexDirection="column" gap="1rem">
-              <Input label="Set length (in minutes)" value={setLength} onChange={val => setSetLength(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="set-length" />
-              <Input label="Number of sets" value={numberOfSets} onChange={val => setNumberOfSets(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="number-of-sets" />
-            </FlexBox>
-          </Step>
-        )}
-        {step >= 2 && (
-          <Step number={2} label="Auto-generation settings">
-            <AutoGenSettings onChange={setSettings} />
-          </Step>
-        )}
-        {step >= 3 && (
-          <Step number={3} label="Pick a name">
-            <Input label="Name" value={name} onChange={setName} name="name" placeholder="Name your setlist..." />
-          </Step>
-        )}
-        <Button kind="primary" isDisabled={!isValid()} onClick={handleNext}>{!name ? "Next step" : 'Create sets'}</Button>
-      </FlexBox>
+      <form action="submit">
+        <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+          {step >= 1 && (
+            <Step number={1} label="Set details">
+              <FlexBox flexDirection="column" gap="1rem">
+                <Input label="Set length (in minutes)" value={setLength} onChange={val => setSetLength(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="set-length" />
+                <Input label="Number of sets" value={numberOfSets} onChange={val => setNumberOfSets(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="number-of-sets" />
+              </FlexBox>
+            </Step>
+          )}
+          {step >= 2 && (
+            <Step number={2} label="Auto-generation settings">
+              <AutoGenSettings onChange={setSettings} />
+            </Step>
+          )}
+          {step >= 3 && (
+            <Step number={3} label="Pick a name">
+              <Input label="Name" value={name} onChange={setName} name="name" placeholder="Name your setlist..." />
+            </Step>
+          )}
+          <Button type="submit" kind="primary" isDisabled={!isValid()} onClick={handleNext}>{!name ? "Next step" : 'Create sets'}</Button>
+        </FlexBox>
+      </form>
     </div>
   )
 }
