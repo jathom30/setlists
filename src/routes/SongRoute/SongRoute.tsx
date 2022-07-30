@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteSong, updateSong } from "api";
 import { AddNote, Breadcrumbs, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal, Input, HeaderBox, CollapsingButton } from "components";
 import { keyLetters, majorMinorOptions, tempos } from "songConstants";
-import pluralize from "pluralize";
+import pluralize, { plural } from "pluralize";
 import { SONGS_QUERY } from "queryKeys";
 import React, { MouseEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -169,7 +169,7 @@ export const SongRoute = () => {
             isLoading={deleteSongMutation.isLoading}
           >
             <span>
-              Contact information for <strong>{song?.name}</strong> cannot be recovered once deleted.
+              <strong>{song?.name}</strong> is currently being used in {pluralize('setlist', song.setlists?.length || 0, true)}. This may result in updated sets.
             </span>
           </DeleteWarning>
         </Modal>

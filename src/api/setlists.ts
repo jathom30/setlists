@@ -1,4 +1,3 @@
-import { FieldSet } from 'airtable'
 import { Set, Song } from 'typings'
 import { base } from './setup'
 

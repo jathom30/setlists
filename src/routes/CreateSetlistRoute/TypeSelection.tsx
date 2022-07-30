@@ -8,7 +8,7 @@ export const TypeSelection = () => {
 
   return (
     <div className="TypeSelection">
-      <GridBox gap="2rem" gridTemplateColumns="repeat(auto-fit, minmax(250px, 1fr))">
+      <GridBox padding="1rem" gap="2rem" gridTemplateColumns="repeat(auto-fit, minmax(250px, 1fr))">
         <FlexBox flexDirection="column" gap=".5rem">
           <Link className="CreateSetlistRoute__type-btn" to="manual">
               <FlexBox alignItems="center" flexDirection="column" gap=".5rem" padding="1rem">

@@ -32,7 +32,7 @@ export const AutoSetlistCreation = ({onCreate}: {onCreate: (autoSettings: any) =
 
   return (
     <div className="AutoSetlistCreation">
-      <FlexBox flexDirection="column" gap="1rem">
+      <FlexBox flexDirection="column" gap="1rem" padding="1rem">
         {step >= 1 && (
           <Step number={1} label="Set details">
             <FlexBox flexDirection="column" gap="1rem">

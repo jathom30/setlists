@@ -1,6 +1,6 @@
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, SongTile } from "components";
+import { Breadcrumbs, Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, MaxHeightContainer, SongTile } from "components";
 import { useSongs } from "hooks";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,29 +28,39 @@ export const SongsRoute = () => {
 
   return (
     <div className="SongsRoute">
-      <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-        <HeaderBox>
-          <h1>Songs</h1>
-          {!noSongs && <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-song')} label="Add song" />}
-        </HeaderBox>
-        <Input value={search} onChange={setSearch} name="search" label="Search" placeholder="Search by song title..." />
-        {noSongs ? (
-          <FlexBox flexDirection="column" gap="1rem" alignItems="center">
-            <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
-            <span>Looks like you don't have any songs yet.</span>
-            <Button kind="primary" isRounded icon={faPlus} onClick={() => navigate('/create-song')}>Create your first song</Button>
+      <MaxHeightContainer
+        fullHeight
+        header={
+          <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+            <HeaderBox>
+              <Breadcrumbs
+                crumbs={[{ to: '/songs', label: 'Songs'}]}
+              />
+              {!noSongs && <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-song')} label="Add song" />}
+            </HeaderBox>
+            <Input value={search} onChange={setSearch} name="search" placeholder="Search by song title..." />
           </FlexBox>
-        ) : (
-          <FlexBox flexDirection="column" gap=".5rem">
-            {sortedAndFilteredSongs?.map(song => (
-              <Link key={song.id} to={`/songs/${song.id}`}>
-                <SongTile song={song} />
-              </Link>
-            ))}
-          </FlexBox>
-        )}
+        }
+      >
+        <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+          {noSongs ? (
+            <FlexBox flexDirection="column" gap="1rem" alignItems="center">
+              <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
+              <span>Looks like you don't have any songs yet.</span>
+              <Button kind="primary" isRounded icon={faPlus} onClick={() => navigate('/create-song')}>Create your first song</Button>
+            </FlexBox>
+          ) : (
+            <FlexBox flexDirection="column" gap=".5rem">
+              {sortedAndFilteredSongs?.map(song => (
+                <Link key={song.id} to={`/songs/${song.id}`}>
+                  <SongTile song={song} />
+                </Link>
+              ))}
+            </FlexBox>
+          )}
 
-      </FlexBox>
+        </FlexBox>
+      </MaxHeightContainer>
     </div>
   )
 }

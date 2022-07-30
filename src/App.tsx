@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import './App.scss';
-import { Header, MaxHeightContainer, RouteWrapper } from 'components';
+import { FlexBox, Header, MaxHeightContainer, RouteWrapper } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
 import { AddBandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
@@ -44,15 +44,27 @@ const routes = [
 ]
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
-  const { isLoggedIn, user } = useIdentityContext()
+  const { isLoggedIn, user, isConfirmedUser } = useIdentityContext()
 
   const hasBands = user?.user_metadata.bandCode?.length > 0
 
-  return (isLoggedIn) ? !hasBands ? <AddBandRoute /> : children : <LoginRoute />
+
+  return isLoggedIn
+    ? !isConfirmedUser
+    ? (
+      <FlexBox flexDirection='column' gap="1rem" padding='1rem'>
+        <h2>Verify your email address</h2>
+        <p>A verification email has been sent to {user?.email}. To complete the sign up process, please click the link in the email.</p>
+      </FlexBox>
+      )
+    : !hasBands
+    ? <AddBandRoute />
+    : children
+    : <LoginRoute />
 }
 
 function App() {
-  const { isLoggedIn } = useIdentityContext()
+  const { isLoggedIn, isConfirmedUser } = useIdentityContext()
 
   useEffect(() => {
     const handleResize = () => {
@@ -72,7 +84,7 @@ function App() {
     <div className="App">
       <MaxHeightContainer
         fullHeight
-        header={isLoggedIn && <Header />}
+        header={(isLoggedIn && isConfirmedUser) && <Header />}
       >
         <Routes>
           <Route path="/" element={
@@ -100,3 +112,6 @@ export default App;
 
 // TODO 
 // optimistic updates throughout setlist CRUD
+// ! Deleted song setlist bug
+// set update bug
+// ! add band bug
