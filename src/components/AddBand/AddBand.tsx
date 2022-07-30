@@ -34,6 +34,7 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
       enabled: false,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
+      retry: 0,
       onSuccess: () => {
         const uniqueBands = Array.from(new Set([...bands, bandCode]))
         updateUserMetaDataMutation.mutate({ data: {
@@ -77,7 +78,7 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
             <form action="submit" onSubmit={handleExistingBand}>
               <FlexBox flexDirection="column" gap="1rem">
                 <Input label="Access code" name="add-existing" value={bandCode} onChange={setBandCode} />
-                <Button isLoading={getBandByCodeQuery.isLoading || updateUserMetaDataMutation.isLoading} kind="primary" type="submit" isDisabled={bandCode.length !== 6}>Add band</Button>
+                <Button isLoading={getBandByCodeQuery.isFetching || updateUserMetaDataMutation.isLoading} kind="primary" type="submit" isDisabled={bandCode.length !== 6}>Add band</Button>
                 {userError && <span style={{textAlign: 'center', color: 'var(--color-danger)'}}>{userError}</span>}
               </FlexBox>
             </form>
