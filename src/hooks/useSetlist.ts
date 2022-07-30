@@ -15,6 +15,10 @@ export const useSetlist = () => {
   const {songsQuery, getSong} = useSongs()
   const [hasChanged, setHasChanged] = useState(false)
 
+  // useEffect(() => {
+  //   console.log(songsQuery.data)
+  // }, [songsQuery])
+
   const setsQuery = useQuery(
     [SETLISTS_QUERY, setlistId],
     async () => {
@@ -22,7 +26,8 @@ export const useSetlist = () => {
       const mappedResponse = response.map(set => (set.fields)) as Set[]
       return mappedResponse.reduce((all: Record<string, Song[]>, set) => ({
         ...all,
-        [set.id]: set.songs.map(songId => getSong(songId))
+        // ! it is possible for the songs array to not return if all songs in the setlist were removed
+        ...(set.songs && {[set.id]: set.songs.map(songId => getSong(songId))})
       }), {})
     },
     {

@@ -48,6 +48,7 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
 
   const hasBands = user?.user_metadata.bandCode?.length > 0
 
+  useEffect(() => {console.log(user)}, [user])
 
   return isLoggedIn
     ? !isConfirmedUser
@@ -112,6 +113,5 @@ export default App;
 
 // TODO 
 // optimistic updates throughout setlist CRUD
-// ! Deleted song setlist bug
 // set update bug
-// ! add band bug
+// auto-gen - basic to start

@@ -1,14 +1,19 @@
-import { useMutation } from "@tanstack/react-query";
-import { createBand } from "api";
-import { FlexBox, Button, Input } from "components";
 import React, { FormEvent, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createBand, getBand } from "api";
+import { FlexBox, Button, Input } from "components";
+import { useMask } from "hooks";
 import { useIdentityContext } from "react-netlify-identity";
+import { BAND_QUERY } from "queryKeys";
+import { Band } from "typings";
 
 export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
   const {user, updateUser} = useIdentityContext()
   const [hasAccessCode, setHasAccessCode] = useState(false)
-  const [bandCode, setBandCode] = useState('')
+  const [bandCode, setBandCode] = useMask('', (val) => val.toUpperCase())
   const [bandName, setBandName] = useState('')
+
+  const [userError, setUserError] = useState<string>()
 
   const bands: string[] = user?.user_metadata?.bandCode || []
   const createBandMutation = useMutation(createBand)
@@ -19,15 +24,35 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
     }
   })
 
+  const getBandByCodeQuery = useQuery(
+    [BAND_QUERY, bandCode],
+    async () => {
+      const response = await getBand(bandCode)
+      return response[0].fields as Band
+    },
+    {
+      enabled: false,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      onSuccess: () => {
+        const uniqueBands = Array.from(new Set([...bands, bandCode]))
+        updateUserMetaDataMutation.mutate({ data: {
+          bandCode: uniqueBands,
+          currentBand: bandCode
+        }})
+      },
+      onError: () => {
+        setUserError('Invalid access code. Check code and try again.')
+      }
+    }
+  )
+
   const handleExistingBand = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    const uniqueBands = Array.from(new Set(...bands, bandCode))
-
-    updateUserMetaDataMutation.mutate({ data: {
-      bandCode: uniqueBands,
-      currentBand: bandCode
-    }})
+    // when adding a band via code, we need to check if the band exists.
+    // this query runs to get the band via code. If successful, user metadata is updated
+    // if failed, user is notified that the band code is note accurate.
+    getBandByCodeQuery.refetch()
   }
 
   const handleNewBand = (e: FormEvent<HTMLFormElement>) => {
@@ -52,7 +77,8 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
             <form action="submit" onSubmit={handleExistingBand}>
               <FlexBox flexDirection="column" gap="1rem">
                 <Input label="Access code" name="add-existing" value={bandCode} onChange={setBandCode} />
-                <Button kind="primary" type="submit" isDisabled={bandCode.length !== 6}>Add band</Button>
+                <Button isLoading={getBandByCodeQuery.isLoading || updateUserMetaDataMutation.isLoading} kind="primary" type="submit" isDisabled={bandCode.length !== 6}>Add band</Button>
+                {userError && <span style={{textAlign: 'center', color: 'var(--color-danger)'}}>{userError}</span>}
               </FlexBox>
             </form>
           </>

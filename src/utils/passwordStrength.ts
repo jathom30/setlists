@@ -2,7 +2,7 @@ export const passwordStrength = (password: string)  => {
   const longEnough = password.length >= 6
   const includesLetters = /[a-zA-Z]/g.test(password)
   const includesNumbers = /\d/.test(password)
-  const includesSpecialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)
+  const includesSpecialCharacters = /[`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)
 
   const cases = [includesLetters, includesNumbers, includesSpecialCharacters]
 
