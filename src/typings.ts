@@ -4,7 +4,7 @@ export type User = {
   last_name: string
   bands?: string[]
   identity_id: string
-  current_band_code?: string
+  current_band_id?: string
 }
 
 export type Band = {

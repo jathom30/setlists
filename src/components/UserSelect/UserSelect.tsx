@@ -1,13 +1,13 @@
-import { faCheckSquare, faCopy, faEllipsisVertical, faSignOut, faSquare, faUser } from "@fortawesome/free-solid-svg-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getUser, updateUser } from "api";
+import { faSquare } from "@fortawesome/free-regular-svg-icons";
+import { faCheckSquare, faCopy, faEllipsisVertical, faSignOut, faUser } from "@fortawesome/free-solid-svg-icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { updateUser } from "api";
 import { CollapsingButton, Popover, FlexBox, Button, Label } from "components";
-import { useGetBands, useOnClickOutside } from "hooks";
+import { useGetBands, useOnClickOutside, useUser } from "hooks";
 import { LOGOUT_QUERY, USER_QUERY } from "queryKeys";
 import React, { useRef, useState } from "react";
 import { useIdentityContext } from "react-netlify-identity";
 import { Link, useNavigate } from "react-router-dom";
-import { User } from "typings";
 import './UserSelect.scss'
 
 export const UserSelect = () => {
@@ -16,27 +16,23 @@ export const UserSelect = () => {
   const navigate = useNavigate()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
 
   useOnClickOutside([buttonRef, contentRef], () => setIsOpen(false))
 
-  const userQuery = useQuery([USER_QUERY, user?.id], async () => {
-    const response = await getUser(user?.id || '')
-    return response[0].fields as User
-  }, {
-    enabled: !!user?.id,
-  })
+  const userQuery = useUser()
 
   const updateUserMutation = useMutation(updateUser, {
     onSuccess: () => {
-      window.location.reload()
+      queryClient.invalidateQueries([USER_QUERY])
     }
   })
 
-  const handleSelectCurrentBand = (bandCode: string) => {
+  const handleSelectCurrentBand = (bandId: string) => {
     updateUserMutation.mutate({
       id: userQuery.data?.id || '',
       user: {
-        current_band_code: bandCode
+        current_band_id: bandId
       }
     })
   }
@@ -56,9 +52,9 @@ export const UserSelect = () => {
   )
 
   const bandsQuery = useGetBands()
-  const currentBandCode = userQuery.data?.current_band_code
-  const isCurrentBand = (bandCode: string) => currentBandCode === bandCode
-  const currentBand = bandsQuery.data?.find(band => band.band_code === currentBandCode)
+  const currentBandCode = userQuery.data?.current_band_id
+  const isCurrentBand = (bandId: string) => currentBandCode === bandId
+  const currentBand = bandsQuery.data?.find(band => band.id === currentBandCode)
 
   const handleCopyBandCode = () => {
     navigator.clipboard.writeText(currentBand?.band_code || '')
@@ -93,10 +89,10 @@ export const UserSelect = () => {
                   {bandsQuery.data?.map(band => (
                     <Button
                       justifyContent="flex-start"
-                      icon={isCurrentBand(band.band_code) ? faCheckSquare : faSquare}
+                      icon={isCurrentBand(band.id) ? faCheckSquare : faSquare}
                       key={band.id}
                       kind="secondary"
-                      onClick={() => handleSelectCurrentBand(band.band_code)}
+                      onClick={() => handleSelectCurrentBand(band.id)}
                       isLoading={updateUserMutation.isLoading}
                     >
                       {band.name}

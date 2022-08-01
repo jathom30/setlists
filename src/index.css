@@ -10,17 +10,17 @@
   --color-component-background: #ffffff;
   --color-component-background-alt: #e6e6e6;
   --color-component-background-darken: #cbcbcb;
-  --color-text: #023047;
-  --color-text-subdued: #808080;
+  --color-text: #264653;
+  --color-text-subdued: #293a41;
 
-  --color-primary: #FB8500;
+  --color-primary: #f4a261;
   --color-primary-text: #FFE7CE;
-  --color-primary-darken: #E47600;
+  --color-primary-darken: #e76f51;
 
   --color-success: #90ee90;
   --color-success-text: #008000;
   --color-danger: #ff4400;
-  --color-secondary: #023047;
+  --color-secondary: #457b9d;
 }
 
 *, *:after, *:before {

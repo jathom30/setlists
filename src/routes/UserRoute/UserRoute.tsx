@@ -1,16 +1,16 @@
 import React, { MouseEvent, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AddBand, Breadcrumbs, Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, MaxHeightContainer, Modal, PasswordStrength } from "components";
-import { faCircleDot, faEllipsisVertical, faPlus, faRulerVertical, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCircleDot, faEllipsisVertical, faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useGetBands, useUser } from "hooks";
 import { useIdentityContext } from "react-netlify-identity";
 import { passwordStrength } from "utils";
-import { updateBand, updateUser } from "api";
+import { updateUser } from "api";
 import { Band } from "typings";
 import './UserRoute.scss'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-regular-svg-icons";
 import { Link } from "react-router-dom";
+import { USER_QUERY } from "queryKeys";
 
 export const UserRoute = () => {
   const {updateUser: updateIdentityUser} = useIdentityContext()
@@ -24,29 +24,19 @@ export const UserRoute = () => {
   const [password, setPassword] = useState('')
   const [verifyPassword, setVerifyPassword] = useState('')
 
-  const [showDeleteWarning, setShowDeleteWarning] = useState(false)
   const [showNewBand, setShowNewBand] = useState(false)
+  const queryClient = useQueryClient()
 
 
 
-  const updateIdentityUserMutation = useMutation(updateIdentityUser, {
-    onSuccess: () => {
-      window.location.reload()
-    }
-  })
-
+  const updateIdentityUserMutation = useMutation(updateIdentityUser)
+  
   const updateUserMutation = useMutation(updateUser, {
     onSuccess: () => {
-      window.location.reload()
+      queryClient.invalidateQueries([USER_QUERY])
     }
   })
   
-  const updateBandMutation = useMutation(updateBand, {
-    onSuccess: () => {
-      window.location.reload()
-    }
-  })
-
   const handleUpdateMetadata = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     updateUserMutation.mutate({
@@ -65,28 +55,16 @@ export const UserRoute = () => {
     }
   }
 
-  const handleDeleteBand = (bandCode: string) => {
-    // !
-  }
-
-  const handleUpdateBand = (newName: string | number, band: Band) => {
-    if (typeof newName !== 'string') { return }
-    updateBandMutation.mutate({
-      ...band,
-      name: newName
-    })
-  }
-
-  const handleSelectCurrentBand = (bandCode: string) => {
+  const handleSelectCurrentBand = (bandId: string) => {
     updateUserMutation.mutate({
       id: userQuery.data?.id || '',
       user: {
-        current_band_code: bandCode
+        current_band_id: bandId
       }
     })
   }
 
-  const currentBand = userQuery.data?.current_band_code
+  const currentBand = userQuery.data?.current_band_id
   const isEnabledPassword = !!password && (password === verifyPassword) && passwordStrength(password) > 0
 
   return (
@@ -156,7 +134,9 @@ export const UserRoute = () => {
               <Button onClick={() => setShowNewBand(false)} isRounded icon={faTimes} />
             </FlexBox>
             {/* // TODO  this could be handled better */}
-            <AddBand onSuccess={() => {setShowNewBand(false); getBandsQuery.refetch(); userQuery.refetch()}} />
+            <AddBand
+              onSuccess={() => {setShowNewBand(false)}}
+            />
           </div>
         </Modal>
       )}
@@ -172,13 +152,13 @@ const BandTile = ({band, currentBand, onChange}: {band: Band; currentBand: strin
           <Button
             kind="secondary"
             isRounded
-            onClick={() => onChange(band.band_code)}
-            icon={currentBand === band.band_code ? faCircleDot : faCircle}
+            onClick={() => onChange(band.id)}
+            icon={currentBand === band.id ? faCircleDot : faCircle}
           >
             {band.name}
           </Button>
         </FlexBox>
-        <Link to={`/band-settings/${band.band_code}`}>
+        <Link to={`/band-settings/${band.id}`}>
           <Button kind="secondary" icon={faEllipsisVertical}>Details</Button>
         </Link>
       </HeaderBox>

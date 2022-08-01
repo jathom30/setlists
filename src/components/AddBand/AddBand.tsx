@@ -1,37 +1,30 @@
 import React, { FormEvent, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createBand, getBand, getUser, updateBand, updateUser } from "api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createBand, getBandByCode, updateUser } from "api";
 import { FlexBox, Button, Input } from "components";
-import { useMask } from "hooks";
-import { useIdentityContext } from "react-netlify-identity";
-import { BAND_QUERY } from "queryKeys";
-import { Band, User } from "typings";
+import { useMask, useUser } from "hooks";
+import { BANDS_QUERY, BAND_QUERY, USER_QUERY } from "queryKeys";
+import { Band } from "typings";
 
 export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
-  const {user} = useIdentityContext()
   const [hasAccessCode, setHasAccessCode] = useState(false)
-  const [bandCode, setBandCode] = useMask('', (val) => val.toUpperCase())
+  const [bandCode, setBandCode] = useMask('', (val) => {
+    return val.toUpperCase().substring(0, 6)
+  })
   const [bandName, setBandName] = useState('')
   const [userId, setUserId] = useState('')
+  const queryClient = useQueryClient()
 
   const [userError, setUserError] = useState<string>()
 
   const createBandMutation = useMutation(createBand)
 
-  const userQuery = useQuery(['user', user?.id], async () => {
-    const response = await getUser(user?.id || '')
-    return response[0].fields as User
-  }, {
-    enabled: !!user?.id,
-    onSuccess: (data) => {
-      setUserId(data.id)
-    }
-  })
+  const userQuery = useUser(data => setUserId(data.id))
 
-  const getBandByCodeQuery = useQuery(
+  const getBandByIdQuery= useQuery(
     [BAND_QUERY, bandCode],
     async () => {
-      const response = await getBand(bandCode)
+      const response = await getBandByCode(bandCode)
       return response[0].fields as Band
     },
     {
@@ -44,10 +37,9 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
           id: userQuery.data?.id || '',
           user: {
             bands: [...userQuery.data?.bands || [], data.id],
-            current_band_code: data.band_code
+            current_band_id: data.id
           }
         })
-        console.log(data)
       },
       onError: () => {
         setUserError('Invalid access code. Check code and try again.')
@@ -61,21 +53,23 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
     // when adding a band via code, we need to check if the band exists.
     // this query runs to get the band via code. If successful, user metadata is updated
     // if failed, user is notified that the band code is note accurate.
-    getBandByCodeQuery.refetch()
+    getBandByIdQuery.refetch()
   }
 
   const updateUserMutation = useMutation(updateUser, {
     onSuccess: () => {
+      queryClient.invalidateQueries([USER_QUERY])
+      queryClient.invalidateQueries([BANDS_QUERY])
       onSuccess()
     }
   })
 
   const handleNewBand = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const newBandCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+    const newbandCode = Math.random().toString(36).substring(2, 8).toUpperCase()
     createBandMutation.mutate({
       name: bandName,
-      band_code: newBandCode,
+      band_code: newbandCode,
       users: [userId || '']
     }, {
       onSuccess: (data) => {
@@ -83,7 +77,7 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
         updateUserMutation.mutate({
           id: userQuery.data?.id || '',
           user: {
-            current_band_code: newBandCode
+            current_band_id: data[0].id
           }
         })
       }
@@ -100,7 +94,7 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
             <form action="submit" onSubmit={handleExistingBand}>
               <FlexBox flexDirection="column" gap="1rem">
                 <Input label="Access code" name="add-existing" value={bandCode} onChange={setBandCode} />
-                <Button isLoading={getBandByCodeQuery.isFetching} kind="primary" type="submit" isDisabled={bandCode.length !== 6}>Add band</Button>
+                <Button isLoading={getBandByIdQuery.isFetching} kind="primary" type="submit" isDisabled={bandCode.length !== 6}>Add band</Button>
                 {userError && <span style={{textAlign: 'center', color: 'var(--color-danger)'}}>{userError}</span>}
               </FlexBox>
             </form>

@@ -6,7 +6,7 @@ export const AddBandRoute = () => {
     <div className="AddBandRoute">
       <FlexBox flexDirection="column" gap="1rem" padding="1rem">
         <h1>Welcome!</h1>
-        <AddBand onSuccess={() => window.location.reload()} />
+        <AddBand onSuccess={() => {}} />
       </FlexBox>
     </div>
   )

@@ -22,10 +22,6 @@ export const SongsRoute = () => {
 
   const noSongs = songs?.length === 0
 
-  if (songsQuery?.isLoading) {
-    return ( <FlexBox flexDirection="column" padding="1rem"><Loader size="l" /></FlexBox>)
-  }
-
   return (
     <div className="SongsRoute">
       <MaxHeightContainer
@@ -42,6 +38,7 @@ export const SongsRoute = () => {
           </FlexBox>
         }
       >
+        {songsQuery.isLoading && <FlexBox flexDirection="column" padding="1rem"><Loader size="l" /></FlexBox>}
         <FlexBox flexDirection="column" gap="1rem" padding="1rem">
           {noSongs ? (
             <FlexBox flexDirection="column" gap="1rem" alignItems="center">

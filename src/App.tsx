@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import './App.scss';
-import { FlexBox, Header, Loader, MaxHeightContainer, RouteWrapper } from 'components';
+import { FlexBox, Header, MaxHeightContainer, RouteWrapper } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
 import { AddBandRoute, BandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
@@ -14,7 +14,7 @@ const routes = [
   },
   {
     key: 'band',
-    path: "/band-settings/:bandCode",
+    path: "/band-settings/:bandId",
     element: <BandRoute />
   },
   {
@@ -53,16 +53,7 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user, isConfirmedUser } = useIdentityContext()
 
   const bandsQuery = useGetBands()
-
   const hasBands = bandsQuery.data && bandsQuery.data?.length > 0
-
-  if (bandsQuery.isLoading) {
-    return (
-      <FlexBox flexDirection='column' padding='1rem'>
-        <Loader size='l' />
-      </FlexBox>
-    )
-  }
 
   return isLoggedIn
     ? !isConfirmedUser
@@ -133,4 +124,3 @@ export default App;
 // 1. new user must add a band -> new of by code
 // 2. new user must add at least one song before they can create a setlist
 // ! handle duplicate add band by access code
-// delete bands

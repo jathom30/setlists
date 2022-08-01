@@ -1,23 +1,27 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getBand, getUsersByBand, updateBand } from "api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getBand, getUsersByBand, updateBand, updateUser } from "api";
 import { Breadcrumbs, Button, DeleteWarning, FlexBox, Group, Label, LabelInput, Loader, MaxHeightContainer, Modal } from "components";
-import { BAND_MEMBERS_QUERY, BAND_QUERY } from "queryKeys";
+import { useUser } from "hooks";
+import { BAND_MEMBERS_QUERY, BAND_QUERY, USER_QUERY } from "queryKeys";
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Band, User } from "typings";
 
 export const BandRoute = () => {
-  const { bandCode } = useParams()
+  const { bandId } = useParams()
   const [removeWarning, setRemoveWarning] = useState(false)
+  const userQuery = useUser()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-  const bandQuery = useQuery([BAND_QUERY, bandCode], async () => {
-    const response = await getBand(bandCode || '')
+  const bandQuery = useQuery([BAND_QUERY, bandId], async () => {
+    const response = await getBand(bandId || '')
     return response[0].fields as Band
   }, {
-    enabled: !!bandCode
+    enabled: !!bandId
   })
 
-  const bandMembersQuery = useQuery([BAND_MEMBERS_QUERY, bandCode], async () => {
+  const bandMembersQuery = useQuery([BAND_MEMBERS_QUERY, bandId], async () => {
     const response = await getUsersByBand(bandQuery.data?.id || '')
     return response.map(user => user.fields as User)
   }, {
@@ -30,12 +34,33 @@ export const BandRoute = () => {
     }
   })
 
-  const handleNameChange = (val: string) => {
+  const handleBandChange = (field: keyof Band, val: string) => {
     if (!bandQuery.isSuccess) return
     bandNameMutation.mutate({
       ...bandQuery.data,
-      name: val,
+      [field]: val,
     })
+  }
+
+  const userMutation = useMutation(updateUser, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([USER_QUERY])
+    }
+  })
+
+  const handleRemovefromBand = () => {
+    if (!userQuery.isSuccess) {return}
+    // if currentBand is the band being deleted, we should auto-select a new band so the user always has an active band selected
+    const isCurrentBand = userQuery.data.current_band_id === bandQuery.data?.id
+    const isNotCurrentBand = userQuery.data.bands?.find(bandId => bandId !== bandQuery.data?.id) || ''
+    userMutation.mutate({
+      id: userQuery.data?.id,
+      user: {
+        bands: userQuery.data.bands?.filter(bandId => bandId !== bandQuery.data?.id),
+      ...(isCurrentBand && {current_band_id: isNotCurrentBand})
+      }
+    })
+    navigate('/user-settings')
   }
 
   const crumbs = [
@@ -44,7 +69,7 @@ export const BandRoute = () => {
       label: 'User Settings'
     },
     {
-      to: `/band-settings/${bandCode}`,
+      to: `/band-settings/${bandId}`,
       label: 'Band details'
     },
   ]
@@ -73,7 +98,7 @@ export const BandRoute = () => {
           <FlexBox flexDirection="column" gap="1rem" padding="1rem">
             <FlexBox flexDirection="column">
               <Label>Band name</Label>
-              <LabelInput value={bandQuery.data.name} onSubmit={val => handleNameChange(val.toString())}>
+              <LabelInput value={bandQuery.data.name} onSubmit={val => handleBandChange('name', val.toString())}>
                 <h1>{bandQuery.data.name}</h1>
               </LabelInput>
             </FlexBox>
@@ -94,7 +119,7 @@ export const BandRoute = () => {
         </MaxHeightContainer>
         {removeWarning && (
           <Modal offClick={() => setRemoveWarning(false)}>
-            <DeleteWarning onClose={() => setRemoveWarning(false)} onDelete={() => {}}>
+            <DeleteWarning onClose={() => setRemoveWarning(false)} onDelete={handleRemovefromBand} isLoading={userMutation.isLoading}>
               <p>Once you have removed yourself from this band you will no longer be able to see its setlists or songs.</p>
               <p>You can add yourself back in the future with this band's access code.</p>
             </DeleteWarning>

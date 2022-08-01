@@ -6,17 +6,17 @@ import { Band } from "typings"
 import { useUser } from "./useUser"
 
 export const useGetCurrentBand = () => {
-  const [bandCode, setBandCode] = useState('')
-  useUser(data => setBandCode(data.current_band_code || ''))
+  const [bandId, setBandId] = useState('')
+  useUser(data => setBandId(data.current_band_id || ''))
 
   const bandQuery = useQuery(
-    [BAND_QUERY, bandCode],
+    [BAND_QUERY, bandId],
     async () => {
-      if (!bandCode) { return }
-      const response = await getBand(bandCode)
+      if (!bandId) { return }
+      const response = await getBand(bandId)
       return response[0].fields as Band
     }, {
-      enabled: !!bandCode
+      enabled: !!bandId
     }
   )
 
