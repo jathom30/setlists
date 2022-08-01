@@ -90,7 +90,7 @@ export const CreateSongRoute = () => {
                 <Label required>Key</Label>
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                   <Select
-                    value={{label: 'C', value: 'C'}}
+                    value={{label: keyLetter, value: keyLetter}}
                     placeholder="Select a key..."
                     menuPortalTarget={document.body}
                     options={keyLetters.map(key => ({label: key, value: key}))}
@@ -100,7 +100,7 @@ export const CreateSongRoute = () => {
                     }}
                   />
                   <Select
-                    value={{label: 'Major', value: false}}
+                    value={{label: isMinor ? 'Minor' :'Major', value: isMinor}}
                     placeholder="Major or minor..."
                     menuPortalTarget={document.body}
                     options={majorMinorOptions}

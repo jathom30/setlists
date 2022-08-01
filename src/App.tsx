@@ -63,7 +63,7 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
         <p>A verification email has been sent to {user?.email}. To complete the sign up process, please click the link in the email.</p>
       </FlexBox>
       )
-    : !hasBands
+    : (!hasBands && bandsQuery.isSuccess)
     ? <RouteWrapper><AddBandRoute /></RouteWrapper>
     : children
     : <LoginRoute />

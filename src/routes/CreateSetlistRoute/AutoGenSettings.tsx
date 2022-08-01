@@ -9,8 +9,8 @@ export const AutoGenSettings = ({onChange}: {onChange: (filters: SetlistFilters)
   const [noCovers, setNoCovers] = useState(false)
   const [onlyCovers, setOnlyCovers] = useState(false)
   const [noBallads, setNoBallads] = useState(false)
-  const [fifths, setFifths] = useState(false)
-  const [vibe, setVibe] = useState<string>()
+  // const [fifths, setFifths] = useState(false)
+  // const [vibe, setVibe] = useState<string>()
 
   const handleCheck = (key: 'covers' | 'onlyCovers') => {
     if (key === 'covers') {
@@ -34,7 +34,7 @@ export const AutoGenSettings = ({onChange}: {onChange: (filters: SetlistFilters)
       // fifths,
       // vibe,
     })
-  }, [fifths, noBallads, noCovers, onChange, onlyCovers, vibe])
+  }, [noBallads, noCovers, onChange, onlyCovers])
 
   return (
     <div className="AutoGenSettings">
@@ -43,9 +43,9 @@ export const AutoGenSettings = ({onChange}: {onChange: (filters: SetlistFilters)
           <CheckButton selected={noCovers} onChange={() => handleCheck('covers')} label="Originals only" />
           <CheckButton selected={onlyCovers} onChange={() => handleCheck('onlyCovers')} label="Covers only" />
           <CheckButton selected={noBallads} onChange={setNoBallads} label="Remove ballads" />
-          <CheckButton selected={fifths} onChange={setFifths} label="Circle of fifths" />
+          {/* <CheckButton selected={fifths} onChange={setFifths} label="Circle of fifths" /> */}
         </GridBox>
-        <FlexBox flexDirection="column" gap=".25rem">
+        {/* <FlexBox flexDirection="column" gap=".25rem">
           <Label>Select a vibe</Label>
           <Select
             isClearable
@@ -56,7 +56,7 @@ export const AutoGenSettings = ({onChange}: {onChange: (filters: SetlistFilters)
             }))}
             onChange={vibe => setVibe(vibe?.value)}
           />
-        </FlexBox>
+        </FlexBox> */}
       </FlexBox>
     </div>
   )
