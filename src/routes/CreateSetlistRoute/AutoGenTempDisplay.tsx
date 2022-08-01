@@ -1,7 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Button, CreateSet, FlexBox } from "components";
-import { useSetlist } from "hooks";
-import { useCreateSetlist } from "hooks/useCreateSetlist";
+import { useSetlist, useCreateSetlist } from "hooks";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { Link } from "react-router-dom";

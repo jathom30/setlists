@@ -10,8 +10,8 @@ import { useNavigate } from "react-router-dom";
 export const AutoSetlistCreation = ({onSubmit}: {onSubmit: (sets: Record<string, Song[]>, name: string) => void}) => {
   const [step, setStep] = useState(1)
   const [setLength, setSetLength] = useState(45)
-  const [numberOfSets, setNumberOfSets] = useState(1)
-  const [settings, setSettings] = useState<SetlistFilters>()
+  const [setCount, setSetCount] = useState(1)
+  const [filters, setFilters] = useState<SetlistFilters>()
   const {songsQuery} = useSongs()
   const [name, setName] = useState('')
   const navigate = useNavigate()
@@ -21,10 +21,10 @@ export const AutoSetlistCreation = ({onSubmit}: {onSubmit: (sets: Record<string,
     if (!name) {
       setStep(prevStep => prevStep + 1)
     } else {
-      if (!songsQuery.isSuccess || !settings) { return }
+      if (!songsQuery.isSuccess || !filters) { return }
       onSubmit(autoGenSetlist(songsQuery.data, {
-        filters: settings,
-        setCount: numberOfSets,
+        filters,
+        setCount,
         setLength,
       }), name)
       navigate('temp')
@@ -48,13 +48,13 @@ export const AutoSetlistCreation = ({onSubmit}: {onSubmit: (sets: Record<string,
             <Step number={1} label="Set details">
               <FlexBox flexDirection="column" gap="1rem">
                 <Input label="Set length (in minutes)" value={setLength} onChange={val => setSetLength(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="set-length" />
-                <Input label="Number of sets" value={numberOfSets} onChange={val => setNumberOfSets(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="number-of-sets" />
+                <Input label="Number of sets" value={setCount} onChange={val => setSetCount(handleGreaterThanZeroChange(parseInt(val)))} step={1} name="number-of-sets" />
               </FlexBox>
             </Step>
           )}
           {step >= 2 && (
             <Step number={2} label="Auto-generation settings">
-              <AutoGenSettings onChange={setSettings} />
+              <AutoGenSettings onChange={setFilters} />
             </Step>
           )}
           {step >= 3 && (

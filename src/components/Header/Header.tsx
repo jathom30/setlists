@@ -6,6 +6,7 @@ import './Header.scss'
 export const Header = () => {
   const location = useLocation()
   const includesLocation = (path: string) => location.pathname.includes(path)
+
   return (
     <div className="Header">
       <HeaderBox>

@@ -23,7 +23,7 @@ export const SongsRoute = () => {
   const noSongs = songs?.length === 0
 
   if (songsQuery?.isLoading) {
-    return ( <Loader size="l" />)
+    return ( <FlexBox flexDirection="column" padding="1rem"><Loader size="l" /></FlexBox>)
   }
 
   return (

@@ -5,6 +5,7 @@ function randomIntFromMax(max: number) {
   return Math.floor(Math.random() * max)
 }
 
+// get a random songs and return all other songs
 const getRandomSong = (songs: Song[]) => {
   const randomSong = songs[randomIntFromMax(songs.length)]
   const remainingSongs = songs.filter(song => song.id !== randomSong.id)
@@ -14,6 +15,7 @@ const getRandomSong = (songs: Song[]) => {
   }
 }
 
+// returns an array of Songs based on a specific length (minutes)
 export const setlistOfLength = (songs: Song[], setlistLength: number) => {
   let availableSongs = songs
   const newSet: Song[] = []
@@ -30,9 +32,13 @@ export const setlistOfLength = (songs: Song[], setlistLength: number) => {
   return newSet
 }
 
-export const setListsWithKeys = (setCount: number, setLength: number, songs: Song[]) => {
+// TODO setlistoflength should work in a number of openers and closers as are averaged across the needed sets
+// ? setlistOflength could be sorted by position in setlistswithkeys or perhaps a separate func
+
+export const setListsWithKeys = (setCount: number, setLength: number, songs: Song[]): Record<string, Song[]> => {
   const setlistKeys = Array.from({ length: setCount}, () => uuid())
   let availableSongs = songs
+
   const setlists = setlistKeys.reduce((sets, key) => {
     const set = {[key]: setlistOfLength(availableSongs, setLength)}
     availableSongs = availableSongs.filter(song => set[key].every(s => s.id !== song.id))
@@ -44,6 +50,7 @@ export const setListsWithKeys = (setCount: number, setLength: number, songs: Son
   return setlists
 }
 
+// filters songs to be used in setlist
 export const filteredSongs = (filters: SetlistFilters, songs: Song[]) => {
   const {noCovers, onlyCovers, noBallads} = filters
   return songs.filter(song => {
@@ -56,7 +63,7 @@ export const filteredSongs = (filters: SetlistFilters, songs: Song[]) => {
     if (noBallads) {
       return song.tempo !== 'ballad'
     }
-    return !song.is_excluded
+    return song.rank !== 'exclude'
   })
 }
 

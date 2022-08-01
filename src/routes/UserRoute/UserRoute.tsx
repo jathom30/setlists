@@ -1,22 +1,26 @@
 import React, { MouseEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { AddBand, Button, CollapsingButton, DeleteWarning, FlexBox, Input, LabelInput, Loader, Modal, PasswordStrength } from "components";
-import { faCheckSquare, faPlus, faSquare, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useGetBands } from "hooks";
+import { AddBand, Breadcrumbs, Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, MaxHeightContainer, Modal, PasswordStrength } from "components";
+import { faCircleDot, faEllipsisVertical, faPlus, faRulerVertical, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { useGetBands, useUser } from "hooks";
 import { useIdentityContext } from "react-netlify-identity";
 import { passwordStrength } from "utils";
-import { updateBand } from "api";
+import { updateBand, updateUser } from "api";
 import { Band } from "typings";
 import './UserRoute.scss'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircle } from "@fortawesome/free-regular-svg-icons";
+import { Link } from "react-router-dom";
 
 export const UserRoute = () => {
-  const {user, updateUser} = useIdentityContext()
+  const {updateUser: updateIdentityUser} = useIdentityContext()
+
+  const userQuery = useUser()
   
   const getBandsQuery = useGetBands()
 
-  const [firstName, setFirstName] = useState(user?.user_metadata.firstName)
-  const [lastName, setLastName] = useState(user?.user_metadata.lastName)
+  const [firstName, setFirstName] = useState(userQuery.data?.first_name|| '')
+  const [lastName, setLastName] = useState(userQuery.data?.last_name|| '')
   const [password, setPassword] = useState('')
   const [verifyPassword, setVerifyPassword] = useState('')
 
@@ -24,6 +28,12 @@ export const UserRoute = () => {
   const [showNewBand, setShowNewBand] = useState(false)
 
 
+
+  const updateIdentityUserMutation = useMutation(updateIdentityUser, {
+    onSuccess: () => {
+      window.location.reload()
+    }
+  })
 
   const updateUserMutation = useMutation(updateUser, {
     onSuccess: () => {
@@ -39,25 +49,24 @@ export const UserRoute = () => {
 
   const handleUpdateMetadata = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    updateUserMutation.mutate({data: {
-      firstName, lastName
-    }})
+    updateUserMutation.mutate({
+      id: userQuery.data?.id || '',
+      user: {
+        first_name: firstName,
+        last_name: lastName,
+      }
+    })
   }
 
   const handlePassword = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     if (password === verifyPassword) {
-      updateUserMutation.mutate({ password })
+      updateIdentityUserMutation.mutate({ password })
     }
   }
 
   const handleDeleteBand = (bandCode: string) => {
-    const bandCodes: string[] = user?.user_metadata.bandCode
-    const filteredBandCodes = bandCodes.filter(code => code !== bandCode)
-    updateUserMutation.mutate({data: {
-      bandCode: filteredBandCodes,
-      currentBand: filteredBandCodes[0]
-    }})
+    // !
   }
 
   const handleUpdateBand = (newName: string | number, band: Band) => {
@@ -69,81 +78,76 @@ export const UserRoute = () => {
   }
 
   const handleSelectCurrentBand = (bandCode: string) => {
-    updateUserMutation.mutate({ data: {
-      currentBand: bandCode
-    }})
+    updateUserMutation.mutate({
+      id: userQuery.data?.id || '',
+      user: {
+        current_band_code: bandCode
+      }
+    })
   }
 
-  const currentBand: string | undefined = user?.user_metadata.currentBand
+  const currentBand = userQuery.data?.current_band_code
   const isEnabledPassword = !!password && (password === verifyPassword) && passwordStrength(password) > 0
 
   return (
     <div className="UserRoute">
-      <FlexBox flexDirection="column" gap="2rem" padding="1rem">
-        <form action="submit">
-          <FlexBox flexDirection="column" gap="1rem">
-            <h3>Update User Info</h3>
-            <Input label="First name" value={firstName} onChange={setFirstName} name="first-name" />
-            <Input label="Last name" value={lastName} onChange={setLastName} name="last-name" />
-            <Button type="submit" kind="primary" onClick={handleUpdateMetadata}>
-              {updateUserMutation.isLoading ? <Loader /> : 'Save'}
-            </Button>
+      <MaxHeightContainer
+        fullHeight
+        header={
+          <FlexBox flexDirection="column" gap="1rem" padding="1rem">
+            <Breadcrumbs
+              crumbs={[{
+                to: '/user-settings',
+                label: 'User Settings'
+              }]}
+            />
           </FlexBox>
-        </form>
-        
-        <form action="submit">
-          <FlexBox flexDirection="column" gap="1rem">
-            <h3>Update Password</h3>
-            <FlexBox flexDirection="column" gap="0.5rem">
-              <Input type="password" label="Password" value={password} onChange={setPassword} name="password" />
-              <PasswordStrength password={password} />
+        }
+      >
+        <FlexBox flexDirection="column" gap="2rem" padding="1rem">
+          <form action="submit">
+            <FlexBox flexDirection="column" gap="1rem">
+              <h3>Update User Info</h3>
+              <Input label="First name" value={firstName} onChange={setFirstName} name="first-name" />
+              <Input label="Last name" value={lastName} onChange={setLastName} name="last-name" />
+              <Button type="submit" kind="primary" onClick={handleUpdateMetadata}>
+                {updateUserMutation.isLoading ? <Loader /> : 'Save'}
+              </Button>
             </FlexBox>
-            <Input type="password" label="Verify Password" value={verifyPassword} onChange={setVerifyPassword} name="verify-password" />
-            <Button type="submit" kind="primary" onClick={handlePassword} isDisabled={!isEnabledPassword || updateUserMutation.isLoading}>
-              {updateUserMutation.isLoading ? <Loader /> : 'Update password'}
-            </Button>
-          </FlexBox>
-        </form>
-        <p style={{display: "none"}}>
-          <label>
-            Don’t fill this out if you’re human: <input name="bot-field" />
-          </label>
-        </p>
-
-        <form action="submit">
-          <FlexBox flexDirection="column" gap="1rem">
-            <FlexBox alignItems="center" justifyContent="space-between" gap="1rem">
-              <h3>Associated Bands</h3>
-              <CollapsingButton icon={faPlus} kind="primary" onClick={() => setShowNewBand(true)} label="Add Band" />
-            </FlexBox>
-            {getBandsQuery.data?.map(band => (
-              <FlexBox key={band.band_code} gap="1rem" alignItems="center" justifyContent="space-between">
-                <Button
-                  kind="secondary"
-                  onClick={() => handleSelectCurrentBand(band.band_code)}
-                >
-                  <FontAwesomeIcon size="2x" icon={currentBand === band.band_code ? faCheckSquare : faSquare} />
-                </Button>
-                <LabelInput value={band.name} onSubmit={(newName) => handleUpdateBand(newName, band)}>
-                  <span>{band.name}</span>
-                </LabelInput>
-                <Button onClick={() => setShowDeleteWarning(true)} isRounded kind="danger" icon={faTrash} />
-                {showDeleteWarning && (
-                  <Modal offClick={() => setShowDeleteWarning(false)}>
-                    <DeleteWarning
-                      onClose={() => setShowDeleteWarning(false)}
-                      onDelete={() => handleDeleteBand(band.band_code)}
-                      isLoading={updateUserMutation.isLoading}
-                    >
-                      <span>This action will remove your access to <strong>{band.name}</strong>'s setlists and songs.</span>
-                    </DeleteWarning>
-                  </Modal>
-                )}  
+          </form>
+          
+          <form action="submit">
+            <FlexBox flexDirection="column" gap="1rem">
+              <h3>Update Password</h3>
+              <FlexBox flexDirection="column" gap="0.5rem">
+                <Input type="password" label="Password" value={password} onChange={setPassword} name="password" />
+                <PasswordStrength password={password} />
               </FlexBox>
-            ))}
-          </FlexBox>
-        </form>
-      </FlexBox>
+              <Input type="password" label="Verify Password" value={verifyPassword} onChange={setVerifyPassword} name="verify-password" />
+              <Button type="submit" kind="primary" onClick={handlePassword} isDisabled={!isEnabledPassword || updateUserMutation.isLoading}>
+                {updateUserMutation.isLoading ? <Loader /> : 'Update password'}
+              </Button>
+            </FlexBox>
+          </form>
+          <p style={{display: "none"}}>
+            <label>
+              Don’t fill this out if you’re human: <input name="bot-field" />
+            </label>
+          </p>
+
+          <form action="submit">
+            <FlexBox flexDirection="column" gap="1rem">
+              <FlexBox alignItems="center" justifyContent="space-between" gap="1rem">
+                <h3>Associated Bands</h3>
+                <CollapsingButton icon={faPlus} kind="primary" onClick={() => setShowNewBand(true)} label="Add Band" />
+              </FlexBox>
+              {getBandsQuery.data?.map(band => (
+                <BandTile key={band.id} band={band} currentBand={currentBand || ''} onChange={handleSelectCurrentBand} />
+              ))}
+            </FlexBox>
+          </form>
+        </FlexBox>
+      </MaxHeightContainer>
       {showNewBand && (
         <Modal offClick={() => setShowNewBand(false)}>
           <div className="UserRoute__modal">
@@ -151,10 +155,33 @@ export const UserRoute = () => {
               <h3>New band</h3>
               <Button onClick={() => setShowNewBand(false)} isRounded icon={faTimes} />
             </FlexBox>
-            <AddBand onSuccess={() => setShowNewBand(false)} />
+            {/* // TODO  this could be handled better */}
+            <AddBand onSuccess={() => {setShowNewBand(false); getBandsQuery.refetch(); userQuery.refetch()}} />
           </div>
         </Modal>
       )}
+    </div>
+  )
+}
+
+const BandTile = ({band, currentBand, onChange}: {band: Band; currentBand: string; onChange: (bandCode: string) => void}) => {
+  return (
+    <div className="BandTile">
+      <HeaderBox>
+        <FlexBox gap="1rem" alignItems="center">
+          <Button
+            kind="secondary"
+            isRounded
+            onClick={() => onChange(band.band_code)}
+            icon={currentBand === band.band_code ? faCircleDot : faCircle}
+          >
+            {band.name}
+          </Button>
+        </FlexBox>
+        <Link to={`/band-settings/${band.band_code}`}>
+          <Button kind="secondary" icon={faEllipsisVertical}>Details</Button>
+        </Link>
+      </HeaderBox>
     </div>
   )
 }

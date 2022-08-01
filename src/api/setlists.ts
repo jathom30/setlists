@@ -1,18 +1,12 @@
-import { Set, Song } from 'typings'
+import { Setlist } from 'typings'
 import { base } from './setup'
 
-const setlistBase = base(process.env.REACT_APP_AIRTABLE_SETLISTS_TABLE || '')
+const setlistsBase = base(process.env.REACT_APP_AIRTABLE_PARENT_LIST_TABLE || '')
 
-export const getSetlists = (parentId: string) => setlistBase.select({filterByFormula: `SEARCH("${parentId}", {parent_list})`}).all()
+export const getSetlists = (bandId: string) => setlistsBase.select({filterByFormula: `SEARCH("${bandId}", {bands})`}).all()
 
-export const createSetlist = (setlist: Omit<Set, 'id'>) => setlistBase.create([{fields: setlist}])
+export const getSetlist = (id: string) => setlistsBase.find(id)
 
-export const deleteSetlist = (setlistId: string) => setlistBase.destroy(setlistId)
+export const createSetlist = (setlist: Omit<Setlist, 'id'>) => setlistsBase.create([{fields: setlist}])
 
-export const updateSetlists = (sets: Record<string, Song[]>) => {
-  const formattedSets = Object.keys(sets).map(key => ({
-    id: key,
-    fields: {songs: sets[key].map(song => song.id)}
-  }))
-  return setlistBase.update(formattedSets)
-}
+export const deleteSetlist = (id: string) => setlistsBase.destroy(id)

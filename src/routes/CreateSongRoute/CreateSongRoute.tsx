@@ -1,4 +1,5 @@
-import { faCheckSquare, faSave, faSquare } from "@fortawesome/free-solid-svg-icons";
+import { faCheckSquare, faCircleDot, faSave } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { createSong } from "api";
 import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, Input, Label, Loader, MaxHeightContainer } from "components";
@@ -14,12 +15,12 @@ export const CreateSongRoute = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [length, setLength] = useState(0)
-  const [keyLetter, setKeyLetter] = useState('')
-  const [isMinor, setIsMinor] = useState<boolean>()
+  const [keyLetter, setKeyLetter] = useState('C')
+  const [isMinor, setIsMinor] = useState<boolean>(false)
   const [tempo, setTempo] = useState('')
   const [isCover, setIsCover] = useState(false)
-  const [isExcluded, setIsExcluded] = useState(false)
-  const [isStarred, setIsStarred] = useState(false)
+  const [position, setPosition] = useState<'opener' | 'closer'>()
+  const [rank, setRank] = useState<'exclude' | 'star'>()
   const [note, setNote] = useState('')
 
 
@@ -38,12 +39,12 @@ export const CreateSongRoute = () => {
       length,
       bands: [bandQuery.data?.id || ''],
       is_cover: isCover,
-      is_excluded: isExcluded,
       key_letter: keyLetter,
       is_minor: isMinor || false,
       tempo,
       notes: note,
-      is_starred: isStarred,
+      position,
+      rank
     })
   }
 
@@ -55,24 +56,6 @@ export const CreateSongRoute = () => {
         <Loader size="l" />
       </FlexBox>
     )
-  }
-
-  const handleExcludeStar = (type: 'star' | 'exclude') => {
-    if (type === 'star') {
-      setIsStarred(prevStarred => {
-        if (!prevStarred) {
-          setIsExcluded(false)
-        }
-        return !prevStarred
-      })
-    } else {
-      setIsExcluded(prevExcluded => {
-        if (!prevExcluded) {
-          setIsStarred(false)
-        }
-        return !prevExcluded
-      })
-    }
   }
 
   return (
@@ -99,14 +82,15 @@ export const CreateSongRoute = () => {
         <FlexBox padding="1rem" gap="1rem" flexDirection="column">
           <form action="submit">
             <FlexBox gap="1rem" flexDirection="column">
-              <Input label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
+              <Input required label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
               
-              <Input label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
+              <Input required label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
               
               <FlexBox flexDirection="column" gap=".25rem">
-                <Label>Key</Label>
+                <Label required>Key</Label>
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                   <Select
+                    value={{label: 'C', value: 'C'}}
                     placeholder="Select a key..."
                     menuPortalTarget={document.body}
                     options={keyLetters.map(key => ({label: key, value: key}))}
@@ -116,6 +100,7 @@ export const CreateSongRoute = () => {
                     }}
                   />
                   <Select
+                    value={{label: 'Major', value: false}}
                     placeholder="Major or minor..."
                     menuPortalTarget={document.body}
                     options={majorMinorOptions}
@@ -128,7 +113,7 @@ export const CreateSongRoute = () => {
               </FlexBox>
               
               <FlexBox flexDirection="column" gap=".25rem">
-                <Label>Tempo</Label>
+                <Label required>Tempo</Label>
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                   <Select
                     placeholder="Select a tempo..."
@@ -146,12 +131,24 @@ export const CreateSongRoute = () => {
                 <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
                   <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
                 </Button>
-                <Button onClick={() => handleExcludeStar('exclude')} kind="text" icon={isExcluded ? faCheckSquare : faSquare}>
-                  <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Exclude from auto-generation</span>
-                </Button>
-                <Button onClick={() => handleExcludeStar('star')} kind="text" icon={isStarred ? faCheckSquare : faSquare}>
-                  <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Always include during auto-generation</span>
-                </Button>
+              </FlexBox>
+
+              <FlexBox gap=".25rem" flexDirection="column">
+                <Label required>Position</Label>
+                <FlexBox gap="1rem">
+                  <Button onClick={() => setPosition('opener')} kind="text" icon={position === 'opener' ? faCircleDot : faCircle}>Opener</Button>
+                  <Button onClick={() => setPosition('closer')} kind="text" icon={position === 'closer' ? faCircleDot : faCircle}>Closer</Button>
+                  <Button onClick={() => setPosition(undefined)} kind="text" icon={!position ? faCircleDot : faCircle}>Other</Button>
+                </FlexBox>
+              </FlexBox>
+
+              <FlexBox gap=".25rem" flexDirection="column">
+                <Label required>Setlist auto-generation importance</Label>
+                <FlexBox gap="1rem">
+                  <Button onClick={() => setRank('exclude')} kind="text" icon={rank === 'exclude' ? faCircleDot : faCircle}>Always exclude</Button>
+                  <Button onClick={() => setRank('star')} kind="text" icon={rank === 'star' ? faCircleDot : faCircle}>Always include</Button>
+                  <Button onClick={() => setRank(undefined)} kind="text" icon={!rank ? faCircleDot : faCircle}>Other</Button>
+                </FlexBox>
               </FlexBox>
 
               <FlexBox flexDirection="column" gap=".25rem">

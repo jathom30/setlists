@@ -1,10 +1,11 @@
 import { Button, Input, FlexBox, PasswordStrength } from "components";
 import React, { MouseEvent, useState } from "react";
 import { useIdentityContext } from "react-netlify-identity";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { passwordStrength } from "utils";
 import './SignUpForm.scss'
 import { REGISTER_QUERY } from "queryKeys";
+import { createUser } from "api/users";
 
 export const SignUpForm = () => {
   const { signupUser } = useIdentityContext()
@@ -18,10 +19,22 @@ export const SignUpForm = () => {
   const [registrationErr, setRegistrationErr] = useState('')
 
 
+  const createUserMutation = useMutation(createUser)
+
   const registerUserQuery = useQuery(
     [REGISTER_QUERY, email],
-    () => signupUser(email, password, {firstName, lastName}),
+    async () => {
+      const response = await signupUser(email, password, {})
+      return response
+    },
     {
+      onSuccess: (data) => {
+        createUserMutation.mutate({
+          first_name: firstName,
+          last_name: lastName,
+          identity_id: data?.id || '',
+        })
+      },
       enabled: false,
       retry: false,
       refetchOnMount: false,

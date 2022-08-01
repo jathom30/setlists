@@ -10,6 +10,8 @@ export const deleteBand = (id: string) => bandsBase.destroy(id)
 
 export const getBand = (bandCode: string) => bandsBase.select({filterByFormula: `SEARCH("${bandCode}", {band_code})`}).all()
 
+export const getBands = (userId: string) => bandsBase.select({filterByFormula: `SEARCH("${userId}", {users})`}).all()
+
 export const updateBand = (band: Band) => {
   const {id, ...fields} = band
   return bandsBase.update([{id, fields: fields as unknown as FieldSet}])

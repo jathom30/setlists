@@ -1,26 +1,22 @@
 import { useQuery } from "@tanstack/react-query"
 import { getBand } from "api"
 import { BAND_QUERY } from "queryKeys"
-import { useIdentityContext } from "react-netlify-identity"
+import { useState } from "react"
+import { Band } from "typings"
+import { useUser } from "./useUser"
 
 export const useGetCurrentBand = () => {
-  const {user} = useIdentityContext()
-  const currentBand: string | undefined = user?.user_metadata.currentBand
+  const [bandCode, setBandCode] = useState('')
+  useUser(data => setBandCode(data.current_band_code || ''))
 
   const bandQuery = useQuery(
-    [BAND_QUERY, currentBand],
+    [BAND_QUERY, bandCode],
     async () => {
-      if (!currentBand) { return }
-      const response = await getBand(currentBand)
-      const band = {
-        id: response[0].id,
-        name: response[0].fields.name,
-        parent_list: response[0].fields.parent_list,
-        key: response[0].fields.band_code,
-      }
-      return band
+      if (!bandCode) { return }
+      const response = await getBand(bandCode)
+      return response[0].fields as Band
     }, {
-      enabled: !!currentBand
+      enabled: !!bandCode
     }
   )
 

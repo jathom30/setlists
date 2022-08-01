@@ -1,4 +1,5 @@
 export * from './bands'
-export * from './parentLists'
 export * from './setlists'
+export * from './sets'
 export * from './songs'
+export * from './users'

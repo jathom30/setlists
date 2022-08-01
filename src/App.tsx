@@ -1,15 +1,21 @@
 import React, { useEffect } from 'react';
 import './App.scss';
-import { FlexBox, Header, MaxHeightContainer, RouteWrapper } from 'components';
+import { FlexBox, Header, Loader, MaxHeightContainer, RouteWrapper } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
-import { AddBandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
+import { AddBandRoute, BandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
+import { useGetBands } from 'hooks';
 
 const routes = [
   {
     key: 'user',
     path: "/user-settings",
     element: <UserRoute />
+  },
+  {
+    key: 'band',
+    path: "/band-settings/:bandCode",
+    element: <BandRoute />
   },
   {
     key: 'create-setlist',
@@ -46,7 +52,17 @@ const routes = [
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user, isConfirmedUser } = useIdentityContext()
 
-  const hasBands = user?.user_metadata.bandCode?.length > 0
+  const bandsQuery = useGetBands()
+
+  const hasBands = bandsQuery.data && bandsQuery.data?.length > 0
+
+  if (bandsQuery.isLoading) {
+    return (
+      <FlexBox flexDirection='column' padding='1rem'>
+        <Loader size='l' />
+      </FlexBox>
+    )
+  }
 
   return isLoggedIn
     ? !isConfirmedUser
@@ -57,7 +73,7 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
       </FlexBox>
       )
     : !hasBands
-    ? <AddBandRoute />
+    ? <RouteWrapper><AddBandRoute /></RouteWrapper>
     : children
     : <LoginRoute />
 }
@@ -113,4 +129,8 @@ export default App;
 // optimistic updates throughout setlist CRUD
 // set update bug
 // ? save settings of auto-gen when going back to prev route
-// ! organize "settings" better in autosetlistcreation
+// ! new user flow
+// 1. new user must add a band -> new of by code
+// 2. new user must add at least one song before they can create a setlist
+// ! handle duplicate add band by access code
+// delete bands

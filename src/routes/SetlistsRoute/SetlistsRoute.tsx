@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getParentLists } from "api";
+import { getSetlists } from "api";
 import { Breadcrumbs, Button, CollapsingButton, FlexBox, HeaderBox, Input, Loader, MaxHeightContainer, SetlistTile } from "components";
 import { PARENT_LISTS_QUERY } from "queryKeys";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,18 +17,18 @@ export const SetlistsRoute = () => {
 
   const bandId = bandQuery.data?.id
 
-  const parentListsQuery = useQuery(
+  const setlistQuery = useQuery(
     [PARENT_LISTS_QUERY, bandId],
     async () => {
-      const response = await getParentLists(bandId || '')
+      const response = await getSetlists(bandId || '')
       return response.map(fieldSet => fieldSet.fields) as Setlist[]
     },
     {
-      enabled: !!bandId,
+      enabled: !!bandId
     }
   )
 
-  const setlists = parentListsQuery.data
+  const setlists = setlistQuery.data
 
   const sortedAndFilteredSetlists = setlists
     ?.filter(setlist => setlist.name.toLowerCase().includes(search.toLowerCase()))
@@ -37,7 +37,7 @@ export const SetlistsRoute = () => {
       else { return 1}
     })
 
-  const noLists = parentListsQuery.isSuccess && parentListsQuery.data.length === 0
+  const noLists = setlistQuery.isSuccess && setlistQuery.data.length === 0
 
   return (
     <div className="SetlistsRoute">
@@ -54,23 +54,23 @@ export const SetlistsRoute = () => {
               />
               {!noLists && <CollapsingButton kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')} label="New setlist" />}
             </HeaderBox>
-            <Input value={search} onChange={setSearch} name="search" label="Search" placeholder="Search by setlist name..." />
+            <Input value={search} onChange={setSearch} name="search" placeholder="Search by setlist name..." />
           </FlexBox>
         }
       >
         <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-          {parentListsQuery.isLoading && <Loader size="l" />}
+          {setlistQuery.isLoading && <Loader size="l" />}
           {noLists ? (
             <FlexBox flexDirection="column" gap="1rem" alignItems="center">
               <FontAwesomeIcon size="4x" icon={faMagnifyingGlass} />
               <span>Looks like you don't have any setlists made yet.</span>
-              <Button kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')}>Create your first setlist</Button>
+              <Button isRounded kind="primary" icon={faPlus} onClick={() => navigate('/create-setlist')}>Create your first setlist</Button>
             </FlexBox>
           ) : (
             <FlexBox flexDirection="column" gap="0.5rem">
-              {sortedAndFilteredSetlists?.map(parent => (
-                <Link key={parent.id} to={`/setlists/${parent.id}`}>
-                  <SetlistTile parent={parent} />
+              {sortedAndFilteredSetlists?.map(setlist => (
+                <Link key={setlist.id} to={`/setlists/${setlist.id}`}>
+                  <SetlistTile setlist={setlist} />
                 </Link>
               ))}
             </FlexBox>

@@ -13,7 +13,7 @@ export const SongTile = ({song}: {song: Song}) => {
             <h4>{song.name}</h4>
             {song.is_cover && <span>(Cover)</span>}
           </FlexBox>
-          {song.is_excluded && <span className="SongTile__warning-text">Excluded from auto-generation</span>}
+          {song.rank === 'exclude' && <span className="SongTile__warning-text">Excluded from auto-generation</span>}
         </HeaderBox>
         <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))">
           <span>{pluralize('minute', song.length, true)}</span>

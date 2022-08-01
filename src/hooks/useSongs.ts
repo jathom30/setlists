@@ -11,11 +11,9 @@ export const missingSong: Song = {
   name: 'SONG NOT FOUND',
   bands: [''],
   is_cover: false,
-  is_excluded: false,
   key_letter: '',
   is_minor: false,
   tempo: '',
-  is_starred: false
 }
 
 export const useSongs = () => {

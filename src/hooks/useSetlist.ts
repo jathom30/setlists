@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { getSetlists } from "api"
+import { getSets } from "api"
 import { SETLISTS_QUERY } from "queryKeys"
 import { useState } from "react"
 import { DropResult } from "react-beautiful-dnd"
@@ -18,7 +18,7 @@ export const useSetlist = (initialSets?: Record<string, Song[]>) => {
   const setsQuery = useQuery(
     [SETLISTS_QUERY, setlistId],
     async () => {
-      const response = await getSetlists(setlistId || '')
+      const response = await getSets(setlistId || '')
       const mappedResponse = response.map(set => (set.fields)) as Set[]
       return mappedResponse.reduce((all: Record<string, Song[]>, set) => ({
         ...all,

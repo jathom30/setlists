@@ -1,21 +1,30 @@
 import { faCheckSquare, faCopy, faEllipsisVertical, faSignOut, faSquare, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getUser, updateUser } from "api";
 import { CollapsingButton, Popover, FlexBox, Button, Label } from "components";
 import { useGetBands, useOnClickOutside } from "hooks";
-import { LOGOUT_QUERY } from "queryKeys";
+import { LOGOUT_QUERY, USER_QUERY } from "queryKeys";
 import React, { useRef, useState } from "react";
 import { useIdentityContext } from "react-netlify-identity";
 import { Link, useNavigate } from "react-router-dom";
+import { User } from "typings";
 import './UserSelect.scss'
 
 export const UserSelect = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const { logoutUser, user, updateUser } = useIdentityContext()
+  const { logoutUser, user } = useIdentityContext()
   const navigate = useNavigate()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useOnClickOutside([buttonRef, contentRef], () => setIsOpen(false))
+
+  const userQuery = useQuery([USER_QUERY, user?.id], async () => {
+    const response = await getUser(user?.id || '')
+    return response[0].fields as User
+  }, {
+    enabled: !!user?.id,
+  })
 
   const updateUserMutation = useMutation(updateUser, {
     onSuccess: () => {
@@ -24,9 +33,12 @@ export const UserSelect = () => {
   })
 
   const handleSelectCurrentBand = (bandCode: string) => {
-    updateUserMutation.mutate({ data: {
-      currentBand: bandCode
-    }})
+    updateUserMutation.mutate({
+      id: userQuery.data?.id || '',
+      user: {
+        current_band_code: bandCode
+      }
+    })
   }
 
   const logoutUserQuery = useQuery(
@@ -43,13 +55,11 @@ export const UserSelect = () => {
     }
   )
 
-  const hasBands = user?.user_metadata.bandCode?.length > 0
-  
   const bandsQuery = useGetBands()
-  const currentBandCode: string | undefined = user?.user_metadata.currentBand
+  const currentBandCode = userQuery.data?.current_band_code
   const isCurrentBand = (bandCode: string) => currentBandCode === bandCode
   const currentBand = bandsQuery.data?.find(band => band.band_code === currentBandCode)
-  
+
   const handleCopyBandCode = () => {
     navigator.clipboard.writeText(currentBand?.band_code || '')
   }
@@ -66,7 +76,7 @@ export const UserSelect = () => {
               {currentBand && (
                 <div className="UserSelect__bands">
                   <FlexBox flexDirection="column" alignItems="center">
-                    <span>{user?.user_metadata.firstName} {user?.user_metadata.lastName}</span>
+                    <span>{userQuery.data?.first_name} {userQuery.data?.last_name}</span>
                     <h3>{currentBand.name}</h3>
                     <Button onClick={handleCopyBandCode} icon={faCopy} isRounded kind="secondary">{currentBand.band_code}</Button>
                   </FlexBox>
@@ -77,25 +87,23 @@ export const UserSelect = () => {
                   </Link>
                 </div>
               )}
-              {hasBands && (
-                <div className="UserSelect__bands">
-                  <FlexBox flexDirection="column" gap=".5rem">
-                    <Label>Bands</Label>
-                    {bandsQuery.data?.map(band => (
-                      <Button
-                        justifyContent="flex-start"
-                        icon={isCurrentBand(band.band_code) ? faCheckSquare : faSquare}
-                        key={band.id}
-                        kind="secondary"
-                        onClick={() => handleSelectCurrentBand(band.band_code)}
-                        isLoading={updateUserMutation.isLoading}
-                      >
-                        {band.name}
-                      </Button>
-                    ))}
-                  </FlexBox>
-                </div>
-              )}
+              <div className="UserSelect__bands">
+                <FlexBox flexDirection="column" gap=".5rem">
+                  <Label>Bands</Label>
+                  {bandsQuery.data?.map(band => (
+                    <Button
+                      justifyContent="flex-start"
+                      icon={isCurrentBand(band.band_code) ? faCheckSquare : faSquare}
+                      key={band.id}
+                      kind="secondary"
+                      onClick={() => handleSelectCurrentBand(band.band_code)}
+                      isLoading={updateUserMutation.isLoading}
+                    >
+                      {band.name}
+                    </Button>
+                  ))}
+                </FlexBox>
+              </div>
               <Button icon={faSignOut} onClick={() => logoutUserQuery.refetch()}>Log out</Button>
             </FlexBox>
           </div>

@@ -4,7 +4,7 @@ import { Breadcrumbs, Button, CollapsingButton, CreateSet, DeleteWarning, FlexBo
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteParentList, deleteSetlist, getParentList, updateSetlists } from "api";
+import { deleteSetlist, deleteSet, getSetlist, updateSets } from "api";
 import { Setlist } from 'typings'
 import { DragDropContext } from "react-beautiful-dnd";
 import './SetlistRoute.scss'
@@ -24,7 +24,7 @@ export const SetlistRoute = () => {
   const setlistQuery = useQuery(
     [PARENT_LIST_QUERY, setlistId],
     async () => {
-      const response = await getParentList(setlistId || '')
+      const response = await getSetlist(setlistId || '')
     return response.fields as Setlist
     },
     { enabled: !!setlistId }
@@ -46,7 +46,7 @@ export const SetlistRoute = () => {
     setHasChanged,
   } = useSetlist()
 
-  const updateSetsMutation = useMutation(updateSetlists, {onSuccess: () => setHasChanged(false)})
+  const updateSetsMutation = useMutation(updateSets, {onSuccess: () => setHasChanged(false)})
 
   const handleUpdate = () => {
     updateSetsMutation.mutate(sets)
@@ -59,13 +59,13 @@ export const SetlistRoute = () => {
   const deleteSetsMutation = useMutation(async () => {
     const setIds = Object.keys(sets)
     const responses = setIds.map(async id => {
-      const response = await deleteSetlist(id)
+      const response = await deleteSet(id)
       return response
     })
     return Promise.allSettled(responses)
   }, {onSuccess: () => navigate('/')})
 
-  const deleteSetlistMutation = useMutation(deleteParentList, {
+  const deleteSetlistMutation = useMutation(deleteSetlist, {
     onSuccess: () => {
       deleteSetsMutation.mutate()
     },

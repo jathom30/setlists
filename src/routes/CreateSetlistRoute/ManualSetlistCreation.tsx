@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Button, CreateSet, FlexBox, Input } from "components";
-import { useSetlist } from "hooks";
+import { useSetlist, useCreateSetlist } from "hooks";
 import { faPlus, faSave } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { DragDropContext } from "react-beautiful-dnd";
-import { useCreateSetlist } from "hooks/useCreateSetlist";
 
 export const ManualSetlistCreation = () => {
   const [name, setName] = useState('')
