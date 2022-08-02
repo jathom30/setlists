@@ -7,8 +7,6 @@ import { User } from "typings"
 export const useUser = (onSuccess?: (data: User) => void) => {
   const { user } = useIdentityContext()
 
-  console.log(user)
-
   const userQuery = useQuery([USER_QUERY, user?.id], async () => {
     const response = await getUser(user?.id || '')
     return response[0].fields as User

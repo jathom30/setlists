@@ -33,6 +33,11 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
       refetchOnWindowFocus: false,
       retry: 0,
       onSuccess: (data) => {
+        // check if band already exists on user
+        if (userQuery.data?.bands?.some(bandId => bandId === data.id)) { 
+          setUserError('Band already exists on user profile. Try a different code.')
+          return
+        }
         updateUserMutation.mutate({
           id: userQuery.data?.id || '',
           user: {

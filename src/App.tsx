@@ -118,6 +118,5 @@ export default App;
 
 // TODO 
 // optimistic updates throughout setlist CRUD
-// set update bug
+// set update bug - can't create a new set when editing -> need to create a new set in the DB as well
 // ? save settings of auto-gen when going back to prev route
-// ! handle duplicate add band by access code
