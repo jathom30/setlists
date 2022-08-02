@@ -16,7 +16,10 @@ export const useGetCurrentBand = () => {
       const response = await getBand(bandId)
       return response[0].fields as Band
     }, {
-      enabled: !!bandId
+      enabled: !!bandId,
+      onSuccess: data => {
+        document.title = `${data?.name} Setlists`
+      }
     }
   )
 

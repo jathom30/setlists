@@ -120,7 +120,4 @@ export default App;
 // optimistic updates throughout setlist CRUD
 // set update bug
 // ? save settings of auto-gen when going back to prev route
-// ! new user flow
-// 1. new user must add a band -> new of by code
-// 2. new user must add at least one song before they can create a setlist
 // ! handle duplicate add band by access code
