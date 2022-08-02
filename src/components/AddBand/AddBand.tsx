@@ -12,14 +12,14 @@ export const AddBand = ({onSuccess}: {onSuccess: () => void}) => {
     return val.toUpperCase().substring(0, 6)
   })
   const [bandName, setBandName] = useState('')
-  const [userId, setUserId] = useState('')
   const queryClient = useQueryClient()
 
   const [userError, setUserError] = useState<string>()
 
   const createBandMutation = useMutation(createBand)
 
-  const userQuery = useUser(data => setUserId(data.id))
+  const userQuery = useUser()
+  const userId = userQuery.data?.id
 
   const getBandByIdQuery= useQuery(
     [BAND_QUERY, bandCode],

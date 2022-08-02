@@ -6,19 +6,22 @@ import { deleteSong, updateSong, getSong } from "api";
 import { AddNote, Breadcrumbs, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal, Input, HeaderBox, CollapsingButton } from "components";
 import { keyLetters, majorMinorOptions, tempos } from "songConstants";
 import pluralize from "pluralize";
-import { SONG_QUERY } from "queryKeys";
+import { SONGS_QUERY, SONG_QUERY } from "queryKeys";
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { Song } from "typings";
 import './SongRoute.scss'
 import { capitalizeFirstLetter } from "utils";
-import { useDebounce, useDebouncedCallback } from "hooks";
+import { useDebounce, useGetCurrentBand } from "hooks";
 
 export const SongRoute = () => {
   const { songId } = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const bandQuery = useGetCurrentBand()
+
+  const bandId = bandQuery.data?.id
 
   
   const songQuery = useQuery([SONG_QUERY, songId], async () => {
@@ -38,6 +41,18 @@ export const SongRoute = () => {
   }, [debouncedName])
 
   const updateSongMutation = useMutation(updateSong, {
+    onMutate: async (newSong) => {
+      await queryClient.cancelQueries([SONG_QUERY, songId])
+
+      const prevSong = queryClient.getQueryData<Song>([SONG_QUERY, songId])
+      if (prevSong) {
+        queryClient.setQueryData([SONG_QUERY, songId], {
+          ...prevSong,
+          ...newSong
+        })
+      }
+      return { prevSong }
+    },
     onSettled: () => {
       queryClient.invalidateQueries([SONG_QUERY, songId])
     }
@@ -53,7 +68,20 @@ export const SongRoute = () => {
   }
 
 
-  const deleteSongMutation = useMutation(deleteSong, {onSuccess: () => navigate('/songs')})
+  const deleteSongMutation = useMutation(deleteSong, {
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries([SONGS_QUERY, bandId])
+
+      const prevSongs = queryClient.getQueryData<Song[]>([SONGS_QUERY, bandId])
+
+      if (prevSongs) {
+        const filteredSongs = prevSongs.filter(song => song.id !== deletedId)
+        queryClient.setQueryData([SONGS_QUERY, bandId], filteredSongs)
+      }
+      return { prevSongs}
+    },
+    onSuccess: () => navigate('/songs')
+  })
 
   const handleDeleteSong = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
