@@ -1,12 +1,12 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { Button, CreateSet, FlexBox } from "components";
+import { Button, CreateSet, FlexBox, LabelInput } from "components";
 import { useSetlist, useCreateSetlist } from "hooks";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { Link } from "react-router-dom";
 import { Song } from "typings";
 
-export const AutoGenTempDisplay = ({initialSets, name}: {initialSets: Record<string, Song[]>; name: string}) => {
+export const AutoGenTempDisplay = ({initialSets, name, onNameChange}: {initialSets: Record<string, Song[]>; name: string; onNameChange: (val: string) => void}) => {
   const {
     addSongToSet,
     removeSongFromSet,
@@ -23,7 +23,9 @@ export const AutoGenTempDisplay = ({initialSets, name}: {initialSets: Record<str
   return (
     <div className="AutoGenTempDisplay">
       <FlexBox flexDirection="column" gap="1rem" padding="1rem">
-        <h2>{name}</h2>
+        <LabelInput value={name} onSubmit={val => onNameChange(val.toString())}>
+          <h2>{name}</h2>
+        </LabelInput>
         <DragDropContext onDragEnd={handleDragEnd}>
             {Object.keys(sets)?.map((key, i) => (
               <CreateSet

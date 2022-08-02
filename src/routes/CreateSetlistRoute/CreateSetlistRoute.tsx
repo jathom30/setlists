@@ -19,7 +19,7 @@ export const CreateSetlistRoute = () => {
   }
   const tempCrumb = {
     to: '/create-setlist/auto/temp',
-    label: 'Temp'
+    label: 'Unsaved setlist'
   }
   const manualCrumb = {
     to: '/create-setlist/manual',
@@ -58,7 +58,7 @@ export const CreateSetlistRoute = () => {
         <Routes>
           <Route path="/" element={<TypeSelection />} />
           <Route path="/auto" element={<AutoSetlistCreation onSubmit={handleSubmitAuto} />} />
-          <Route path="/auto/temp" element={<AutoGenTempDisplay initialSets={autoSets} name={autoName} />} />
+          <Route path="/auto/temp" element={<AutoGenTempDisplay initialSets={autoSets} name={autoName} onNameChange={setAutoName} />} />
           <Route path="/manual" element={<ManualSetlistCreation />} />
         </Routes>
       </MaxHeightContainer>
