@@ -20,7 +20,6 @@ export const SongRoute = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const bandQuery = useGetCurrentBand()
-
   const bandId = bandQuery.data?.id
 
   

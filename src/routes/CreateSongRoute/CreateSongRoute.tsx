@@ -1,6 +1,6 @@
 import { faCheckSquare, faCircleDot, faSave } from "@fortawesome/free-solid-svg-icons";
 import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSong } from "api";
 import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, Input, Label, Loader, MaxHeightContainer } from "components";
 import { useGetCurrentBand } from "hooks";
@@ -10,6 +10,8 @@ import Select from "react-select";
 import { keyLetters, majorMinorOptions, tempos } from "songConstants";
 import { capitalizeFirstLetter } from "utils";
 import './CreateSongRoute.scss'
+import { SONGS_QUERY } from "queryKeys";
+import { Song } from "typings";
 
 export const CreateSongRoute = () => {
   const navigate = useNavigate()
@@ -23,10 +25,21 @@ export const CreateSongRoute = () => {
   const [rank, setRank] = useState<'exclude' | 'star'>()
   const [note, setNote] = useState('')
 
-
+  const queryClient = useQueryClient()
   const bandQuery = useGetCurrentBand()
+  const bandId = bandQuery.data?.id
 
   const createSongMutation = useMutation(createSong, {
+    onMutate: async (newSong) => {
+      await queryClient.cancelQueries([SONGS_QUERY, bandId])
+
+      const prevSongs = queryClient.getQueryData<Song[]>([SONGS_QUERY, bandId])
+
+      if (prevSongs) {
+        queryClient.setQueryData([SONGS_QUERY, bandId], [...prevSongs, newSong])
+      }
+      return { prevSongs }
+    },
     onSuccess: () => {
       navigate('/songs')
     }
@@ -134,7 +147,7 @@ export const CreateSongRoute = () => {
               </FlexBox>
 
               <FlexBox gap=".25rem" flexDirection="column">
-                <Label required>Position</Label>
+                <Label>Position</Label>
                 <FlexBox gap="1rem">
                   <Button onClick={() => setPosition('opener')} kind="text" icon={position === 'opener' ? faCircleDot : faCircle}>Opener</Button>
                   <Button onClick={() => setPosition('closer')} kind="text" icon={position === 'closer' ? faCircleDot : faCircle}>Closer</Button>
@@ -143,7 +156,7 @@ export const CreateSongRoute = () => {
               </FlexBox>
 
               <FlexBox gap=".25rem" flexDirection="column">
-                <Label required>Setlist auto-generation importance</Label>
+                <Label>Setlist auto-generation importance</Label>
                 <FlexBox gap="1rem">
                   <Button onClick={() => setRank('exclude')} kind="text" icon={rank === 'exclude' ? faCircleDot : faCircle}>Always exclude</Button>
                   <Button onClick={() => setRank('star')} kind="text" icon={rank === 'star' ? faCircleDot : faCircle}>Always include</Button>

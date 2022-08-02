@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { useOnClickOutside, useSetlist, useSongs } from "hooks";
 import { Breadcrumbs, Button, CollapsingButton, CreateSet, DeleteWarning, FlexBox, Group, HeaderBox, Loader, MaxHeightContainer, Modal, Popover } from "components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
+import { PARENT_LISTS_QUERY, PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { deleteSetlist, deleteSet, getSetlist, updateSets } from "api";
 import { Setlist } from 'typings'
@@ -46,7 +46,12 @@ export const SetlistRoute = () => {
     setHasChanged,
   } = useSetlist()
 
-  const updateSetsMutation = useMutation(updateSets, {onSuccess: () => setHasChanged(false)})
+  const updateSetsMutation = useMutation(updateSets, {
+    onMutate: async (newSets) => {
+      console.log(newSets)
+    },
+    onSuccess: () => setHasChanged(false)
+  })
 
   const handleUpdate = () => {
     updateSetsMutation.mutate(sets)
@@ -66,6 +71,17 @@ export const SetlistRoute = () => {
   }, {onSuccess: () => navigate('/')})
 
   const deleteSetlistMutation = useMutation(deleteSetlist, {
+    onMutate: async (setlistId) => {
+      await queryClient.cancelQueries([PARENT_LISTS_QUERY])
+
+      const prevSetlists = queryClient.getQueryData<Setlist[]>([PARENT_LISTS_QUERY])
+
+      if (prevSetlists) {
+        const filteredSetlists = prevSetlists.filter(setlist => setlist.id !== setlistId)
+        queryClient.setQueryData([PARENT_LISTS_QUERY], filteredSetlists)
+      }
+      return {prevSetlists}
+    },
     onSuccess: () => {
       deleteSetsMutation.mutate()
     },
