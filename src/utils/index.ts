@@ -1,2 +1,5 @@
 export * from './assorted'
 export * from './passwordStrength'
+export * from './routes'
+export * from './setlists'
+export * from './svg'

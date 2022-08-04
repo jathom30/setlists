@@ -15,43 +15,55 @@ const getRandomSong = (songs: Song[]) => {
   }
 }
 
-// returns an array of Songs based on a specific length (minutes)
-export const setlistOfLength = (songs: Song[], setlistLength: number) => {
+const setlistOfSongCountLength = (songs: Song[], songCount: number) => {
   let availableSongs = songs
   const newSet: Song[] = []
-  let newSetLength = 0
+  let newSetCount = 0
 
-  // check that the new setlist is shorter than requested...
-  // AND that there are songs to choose from
-  while (newSetLength < setlistLength && availableSongs.length > 0) {
+  while (newSetCount < songCount && availableSongs.length > 0) {
     const {randomSong, remainingSongs} = getRandomSong(availableSongs)
     newSet.push(randomSong)
     availableSongs = remainingSongs
-    newSetLength += randomSong.length
+    newSetCount += 1
   }
-  return newSet
+  return {
+    newSet,
+    remainingSongs: availableSongs
+  }
 }
 
-// TODO setlistoflength should work in a number of openers and closers as are averaged across the needed sets
-// ? setlistOflength could be sorted by position in setlistswithkeys or perhaps a separate func
+const setOfLength = (songs: Song[], setLength: number) => {
+  const set: Song[] = []
+  let newSetLength = 0
 
-export const setListsWithKeys = (setCount: number, setLength: number, songs: Song[]): Record<string, Song[]> => {
-  const setlistKeys = Array.from({ length: setCount}, () => uuid())
-  let availableSongs = songs
+  let openers = songs.filter(song => song.position === 'opener')
+  let closers = songs.filter(song => song.position === 'closer')
+  let others = songs.filter(song => !song.position)
 
-  const setlists = setlistKeys.reduce((sets, key) => {
-    const set = {[key]: setlistOfLength(availableSongs, setLength)}
-    availableSongs = availableSongs.filter(song => set[key].every(s => s.id !== song.id))
-    return {
-      ...sets,
-      ...set
-    }
-  }, {})
-  return setlists
+  // adding closers first to backload sets
+  while (newSetLength < setLength && closers.length > 0) {
+    const {randomSong, remainingSongs} = getRandomSong(closers)
+    set.push(randomSong)
+    closers = remainingSongs
+    newSetLength += randomSong.length
+  }
+  while (newSetLength < setLength && openers.length > 0) {
+    const {randomSong, remainingSongs} = getRandomSong(openers)
+    set.push(randomSong)
+    openers = remainingSongs
+    newSetLength += randomSong.length
+  }
+  while (newSetLength < setLength && others.length > 0) {
+    const {randomSong, remainingSongs} = getRandomSong(others)
+    set.push(randomSong)
+    others = remainingSongs
+    newSetLength += randomSong.length
+  }
+  return set
 }
 
 // filters songs to be used in setlist
-export const filteredSongs = (filters: SetlistFilters, songs: Song[]) => {
+const filteredSongs = (filters: SetlistFilters, songs: Song[]) => {
   const {noCovers, onlyCovers, noBallads} = filters
   return songs.filter(song => {
     if (noCovers) {
@@ -67,91 +79,89 @@ export const filteredSongs = (filters: SetlistFilters, songs: Song[]) => {
   })
 }
 
-export const autoGenSetlist = (intitialSongs: Song[], settings: SetlistSettings) => {
-  const songs = filteredSongs(settings.filters, intitialSongs)
-  const setlist = setListsWithKeys(settings.setCount, settings.setLength, songs)
-  return setlist
+// returns a group of openers, closers, or others and the max available per set
+const songCountByPostitionPerSet = (songs: Song[], setCount: number, position?: Song['position']) => {
+  const songsOfPosition = songs.filter(song => song.position === position)
+  // return the number of available songs divided by the set count so that there are enough songs in each set
+  // Math.ceil ensures all songs are used
+  return {
+    songs: songsOfPosition,
+    perSet: Math.floor(songsOfPosition.length / setCount)
+  }
 }
 
-// // prioritize openers and closers
-// export const createSetlists = (setlistLength: number, numberOfSetlists: number, songs: Song[]) => {
-//   // exclude songs marked as excluded
-//   // ! filter ballads, covers, or originals according to config
-//   const includedSongs = songs.filter(song => !song.is_excluded)
-//   // create array of keys based on number of setlists needed
-//   const setlistKeys = Array.from({length: numberOfSetlists}, () => uuid())
-  
-//   // organize songs by placement, when a song is selected, it is removed from the list so it can't get used again
-//   let openers = includedSongs.filter(song => song.placement === 'opener')
-//   let closers = includedSongs.filter(song => song.placement === 'closer')
-//   let others = includedSongs.filter(song => song.placement === 'other')
+const getSongsOfPositionPerSet = (songs: Song[], setCount: number, position?: Song['position']) => {
+  const positionPerSet = songCountByPostitionPerSet(songs, setCount, position)
+  let availableSongs = positionPerSet.songs
+  const sets = Array.from({length: setCount}).map(_ => {
+    const randomSongs = setlistOfSongCountLength(availableSongs, positionPerSet.perSet)
+    availableSongs = randomSongs.remainingSongs
+    return randomSongs.newSet
+  })
+  return {sets, extraSongs: availableSongs}
+}
 
-//   // Preference is to fill sets with openers and closers, but there should be enough for each set
-//   const preferredOpenerCount = Math.floor(openers.length / numberOfSetlists)
-//   const preferredCloserCount = Math.floor(closers.length / numberOfSetlists)
+// create sets of songs based on position so each set has a list of openers, closers, and other
+// unused or extra songs get returned as well to be used as filler
+const createRandomSetsByPosition = (songs: Song[], setCount: number) => {
+  // openers, closers, and others are an even distibution of songs...
+  // ...to ensure each set has the minimum number of openers and closers available.
+  // extraSongs are then added to each set as available
+  const openers = getSongsOfPositionPerSet(songs, setCount, 'opener')
+  const closers = getSongsOfPositionPerSet(songs, setCount, 'closer')
+  const others = getSongsOfPositionPerSet(songs, setCount)
+  const extraSongs = [...openers.extraSongs, ...closers.extraSongs, ...others.extraSongs]
 
-//   // build the setlists
-//   const setlists: {[key: string]: string[]} = setlistKeys.reduce((acc, setlistId) => {
-//     // length keeps track of a set's time so the loop knows when the set is long enough
-//     let length = 0
-//     let openersInSet = 0
-//     let closersInSet = 0
-//     let setlist: Song[] = []
-    
-//     // add closers first to back fill
-//     while (closers.length > 0 && closersInSet <= preferredCloserCount && length < setlistLength) {
-//       const { randomSong, remainingSongs } = getRandomSong(closers)
-//       setlist = [...setlist, randomSong]
-//       closers = remainingSongs
-//       closersInSet += 1
-//       length += randomSong.length
-//     }
-//     // then add openers
-//     while (openers.length > 0 && openersInSet < preferredOpenerCount && length < setlistLength) {
-//       const { randomSong, remainingSongs } = getRandomSong(openers)
-//       setlist = [randomSong, ...setlist]
-//       openers = remainingSongs
-//       openersInSet += 1
-//       length += randomSong.length
-//     }
-//     // fill remaining space with "others"
-//     while (others.length > 0 && length < setlistLength) {
-//       const { randomSong, remainingSongs } = getRandomSong(others)
-//       // insert "other" songs before closers
-//       const closerIndex = setlist.findIndex(song => song.placement === 'closer')
-//       setlist = [...setlist.slice(0, closerIndex), randomSong, ...setlist.slice(closerIndex)]
-//       others = remainingSongs
-//       length += randomSong.length
-//     }
+  const randomSets = Array.from({length: setCount}, (_, i) => i).reduce((sets: Record<string, Song[]>, index) => {
+    return {
+      ...sets,
+      [uuid()]: [...openers.sets[index], ...others.sets[index], ...closers.sets[index]]
+    }
+  }, {})
 
-//     // check that only one ballad exists in the set, replace any additional ballads
-//     let balladCount = setlist.filter(song => song.tempo === 'ballad')?.length || 0
-//     let othersSansBallads = others.filter(song => song.tempo !== 'ballad')
-//     const balladsPerHour = 1
-//     const recommendedBalladsPerSet = Math.ceil(setlistLength / 60 / balladsPerHour)
-//     while (balladCount > recommendedBalladsPerSet) {
-//       const {randomSong, remainingSongs} = getRandomSong(othersSansBallads)
-//       // get first ballad index
-//       const balladIndex = setlist.findIndex(song => song?.tempo === 'ballad')
-//       // subract its length from overall set length
-//       length -= setlist[balladIndex]?.length
-//       setlist = [...setlist.slice(0, balladIndex), randomSong, ...setlist.slice(balladIndex + 1)]
-//       othersSansBallads = remainingSongs
-//       // add length back with replacement song
-//       length += randomSong?.length
-//       // recalc ballad count to update while loop
-//       balladCount = setlist.filter(song => song.tempo === 'ballad')?.length || 0
-//     }
+  // distribute extra songs across sets until all songs are used
+  while (extraSongs.length > 0) {
+    Object.keys(randomSets).forEach(key => {
+      const poppedSong = extraSongs.pop()
+      poppedSong && randomSets[key].push(poppedSong)
+    })
+  }
 
-//     return {
-//       ...acc,
-//       // map setlist to ids so we can pull the actual song to the user instead of a copy
-//       [setlistId]: setlist.map(song => song.id),
-//     }
-//   }, {})
-  
-//   return {
-//     setlists,
-//     ids: setlistKeys,
-//   }
-// }
+  return randomSets
+}
+
+const sortSetsByPosition = (sets: Record<string, Song[]>) => {
+  // sort by position priority
+  const positionPriority = ['opener', 'other', 'closer']
+  return Object.keys(sets).reduce((newSets: Record<string, Song[]>, key) => {
+    return {
+      ...newSets,
+      [key]: sets[key].sort((a, b) => {
+        return positionPriority.indexOf(a.position || 'other') - positionPriority.indexOf(b.position || 'other')
+      })
+    }
+  }, {})
+}
+
+export const autoGenSetlist = (intitialSongs: Song[], settings: SetlistSettings) => {
+  const {setCount, setLength, filters} = settings
+  const songs = filteredSongs(filters, intitialSongs)
+
+  // split songs into sets by position so each desired set has an even distribution of openers and closers
+  const setsByPosition = createRandomSetsByPosition(songs, setCount)
+
+  // trim above sets to desired minute length and sort songs so sets start with openers and end with closers
+  const setsByLength = Object.keys(setsByPosition).reduce((sets: Record<string, Song[]>, key) => ({
+    ...sets,
+    [key]: setOfLength(setsByPosition[key], setLength)
+  }), {})
+
+  // sort by position
+  const sortedByPosition = sortSetsByPosition(setsByLength)
+
+  return sortedByPosition
+}
+
+// TODO starred songs
+// TODO create visual "pattern" option
+// example: wave line indicating general energy level to show user general path of a set

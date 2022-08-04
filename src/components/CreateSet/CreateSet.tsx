@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, AddSong } from "components";
+import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, AddSong, TempoWave } from "components";
 import pluralize from "pluralize";
 import { Song } from "typings";
 import { Draggable, Droppable} from 'react-beautiful-dnd'
@@ -38,6 +38,7 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
   return (
     <div className="CreateSet">
       <FlexBox flexDirection="column" gap="1rem">
+        <TempoWave set={set} />
         <HeaderBox>
           <FlexBox gap=".5rem" alignItems="center">
             <h4>Set {index}</h4>

@@ -3,51 +3,9 @@ import './App.scss';
 import { FlexBox, Header, MaxHeightContainer, RouteWrapper } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIdentityContext } from 'react-netlify-identity';
-import { AddBandRoute, BandRoute, CreateSetlistRoute, CreateSongRoute, LoginRoute, SetlistRoute, SetlistsRoute, SongRoute, SongsRoute, UserRoute } from 'routes';
+import { AddBandRoute, LoginRoute } from 'routes';
 import { useGetBands } from 'hooks';
-
-const routes = [
-  {
-    key: 'user',
-    path: "/user-settings",
-    element: <UserRoute />
-  },
-  {
-    key: 'band',
-    path: "/band-settings/:bandId",
-    element: <BandRoute />
-  },
-  {
-    key: 'create-setlist',
-    path: "/create-setlist/*",
-    element: <CreateSetlistRoute />
-  },
-  {
-    key: 'create-song',
-    path: "/create-song",
-    element: <CreateSongRoute />
-  },
-  {
-    key: 'songs',
-    path: "/songs",
-    element: <SongsRoute />
-  },
-  {
-    key: 'song',
-    path: "/songs/:songId",
-    element: <SongRoute />
-  },
-  {
-    key: 'setlists',
-    path: "/setlists",
-    element: <SetlistsRoute />
-  },
-  {
-    key: 'setlist',
-    path: "/setlists/:setlistId",
-    element: <SetlistRoute />
-  },
-]
+import { routes } from 'utils';
 
 const ProtectedRoute = ({children}: {children: JSX.Element}) => {
   const { isLoggedIn, user, isConfirmedUser } = useIdentityContext()
@@ -117,7 +75,6 @@ function App() {
 export default App;
 
 // TODO 
-// optimistic updates throughout setlist CRUD
 // set update bug - can't create a new set when editing -> need to create a new set in the DB as well
 // ? save settings of auto-gen when going back to prev route
 // edit set name when viewing
