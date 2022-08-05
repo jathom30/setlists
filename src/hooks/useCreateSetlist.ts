@@ -27,7 +27,6 @@ export const useCreateSetlist = (sets: Record<string, Song[]>, name: string) => 
   }, {
     onSuccess: () => {
       queryClient.invalidateQueries([PARENT_LISTS_QUERY, bandId])
-      navigate('/setlists')
     }
   })
 
@@ -44,7 +43,11 @@ export const useCreateSetlist = (sets: Record<string, Song[]>, name: string) => 
     },
     onSuccess: (data) => {
       const parentId = data[0].id
-      createSetMutation.mutate(parentId)
+      createSetMutation.mutate(parentId, {
+        onSuccess: () => {
+          navigate('/setlists')
+        }
+      })
     }
   })
 
@@ -58,6 +61,7 @@ export const useCreateSetlist = (sets: Record<string, Song[]>, name: string) => 
   }
 
   return {
+    createSetMutation,
     onSubmit,
     isLoading: createSetMutation.isLoading || createSetlistMutation.isLoading
   }

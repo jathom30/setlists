@@ -109,6 +109,7 @@ export const BandRoute = () => {
             <Group padding="1rem">
               <FlexBox flexDirection="column" gap=".5rem">
                 <Label>Members</Label>
+                {bandMembersQuery.isLoading && <Loader size="s" />}
                 {bandMembersQuery.data?.map(member => (
                   <span key={member.id}>{member.first_name} {member.last_name}</span>
                   ))}
