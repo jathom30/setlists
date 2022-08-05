@@ -61,7 +61,7 @@ export const useSetlist = (initialSets?: Record<string, Song[]>) => {
 
   const addSet = () => {
     setSets(prevSets => {
-      return {...prevSets, [uuid()]: []}
+      return {...prevSets, [`temp-${uuid()}`]: []}
     })
     setHasChanged(true)
   }

@@ -1,14 +1,14 @@
-import React, { useRef, useState } from "react";
-import { useOnClickOutside, useSetlist, useSongs } from "hooks";
+import React, { useEffect, useRef, useState } from "react";
+import { useGetCurrentBand, useOnClickOutside, useSetlist, useSongs } from "hooks";
 import { Breadcrumbs, Button, CollapsingButton, CreateSet, DeleteWarning, FlexBox, Group, HeaderBox, Loader, MaxHeightContainer, Modal, Popover } from "components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PARENT_LISTS_QUERY, PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteSetlist, deleteSet, getSetlist, updateSets } from "api";
-import { Setlist } from 'typings'
+import { deleteSetlist, deleteSet, getSetlist, updateSets, createSet } from "api";
+import { Setlist, Song } from 'typings'
 import { DragDropContext } from "react-beautiful-dnd";
 import './SetlistRoute.scss'
-import { faCog, faCopy, faEye, faEyeSlash, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCog, faEye, faPencil, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export const SetlistRoute = () => {
   const { setlistId } = useParams()
@@ -20,6 +20,9 @@ export const SetlistRoute = () => {
   useOnClickOutside([buttonRef, contentRef], () => setShowSettings(false))
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+
+  const bandQuery = useGetCurrentBand()
+  const bandId = bandQuery.data?.id
 
   const setlistQuery = useQuery(
     [PARENT_LIST_QUERY, setlistId],
@@ -46,19 +49,57 @@ export const SetlistRoute = () => {
     setHasChanged,
   } = useSetlist()
 
+  const createSetMutation = useMutation(async ({parentId, sets}: {parentId: string, sets: Record<string, Song[]>}) => {
+    const setIds = Object.keys(sets)
+    const responses = setIds.map(async id => {
+      const response = await createSet({
+        songs: sets[id].map(song => song.id),
+        parent_list: [parentId],
+      })
+      return response
+    })
+    return Promise.allSettled(responses)
+  }, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([SETLISTS_QUERY, setlistId])
+    }
+  })
+
+  useEffect(() => {
+    console.log(sets)
+  }, [sets])
+
   const updateSetsMutation = useMutation(updateSets, {
-    onMutate: async (newSets) => {
-      console.log(newSets)
-    },
     onSuccess: () => setHasChanged(false)
   })
 
   const handleUpdate = () => {
-    updateSetsMutation.mutate(sets)
-  }
-
-  const handleSaveAsNew = () => {
-    alert('not yet working')
+    const sortedSets = Object.keys(sets).reduce((
+      allSets: {
+        temp: Record<string, Song[]>,
+        existing: Record<string, Song[]>
+      },
+      key
+    ) => {
+      if (key.includes('temp-')) {
+        return {
+          ...allSets,
+          temp: {
+            ...allSets.temp,
+            [key]: sets[key]
+          }
+        }
+      }
+      return {
+        ...allSets,
+        existing: {
+          ...allSets.existing,
+          [key]: sets[key]
+        }
+      }
+    }, {temp: {}, existing: {}})
+    updateSetsMutation.mutate(sortedSets.existing)
+    createSetMutation.mutate({parentId: setlistId || '', sets: sortedSets.temp})
   }
 
   const deleteSetsMutation = useMutation(async () => {
@@ -83,7 +124,9 @@ export const SetlistRoute = () => {
       return {prevSetlists}
     },
     onSuccess: () => {
-      deleteSetsMutation.mutate()
+      deleteSetsMutation.mutate(undefined, {
+        onSuccess: () => navigate('/'),
+      })
     },
     onSettled: () => {
       queryClient.invalidateQueries([SETLISTS_QUERY])
@@ -92,6 +135,13 @@ export const SetlistRoute = () => {
 
   const handleDelete = () => {
     deleteSetlistMutation.mutate(setlist?.id || '')
+  }
+
+  const deleteSetMutation = useMutation(deleteSet)
+
+  const handleDeleteSet = (setId: string) => {
+    deleteSetMutation.mutate(setId)
+    removeSet(setId)
   }
 
   const isLoading = songsQuery?.isLoading || setsQuery.isLoading || setlistQuery.isLoading
@@ -131,7 +181,7 @@ export const SetlistRoute = () => {
                     <FlexBox flexDirection="column" padding="1rem" gap=".5rem">
                       <Button
                         justifyContent="flex-start"
-                        icon={showReadOnly ? faEyeSlash : faEye}
+                        icon={showReadOnly ? faPencil : faEye}
                         kind="secondary"
                         onClick={() => {setShowReadOnly(!showReadOnly); setShowSettings(false)}}
                       >
@@ -163,7 +213,7 @@ export const SetlistRoute = () => {
                 <FlexBox gap="1rem" padding="1rem" justifyContent="flex-end">
                   <Button onClick={() => {setsQuery.refetch(); setHasChanged(false)}}>Cancel</Button>
                   <Button onClick={handleUpdate} isLoading={updateSetsMutation.isLoading} icon={faSave} kind="primary">Save</Button>
-                  <Button onClick={handleSaveAsNew} icon={faCopy} kind="secondary">Save as new</Button>
+                  {/* <Button onClick={handleSaveAsNew} icon={faCopy} kind="secondary">Save as new</Button> */}
                 </FlexBox>
               </Group>
             </FlexBox>
@@ -193,7 +243,7 @@ export const SetlistRoute = () => {
                     setKey={key}
                     index={i + 1}
                     isDisabledRemove={Object.keys(sets).length === 1}
-                    onRemove={() => removeSet(key)}
+                    onRemove={() => handleDeleteSet(key)}
                     onRemoveSong={songId => removeSongFromSet(key, songId)}
                     onChange={song => addSongToSet(song, key)}
                   />

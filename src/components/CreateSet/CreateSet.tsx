@@ -3,7 +3,7 @@ import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, AddSong, TempoWave }
 import pluralize from "pluralize";
 import { Song } from "typings";
 import { Draggable, Droppable} from 'react-beautiful-dnd'
-import { faGrip, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faGrip, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Select from "react-select";
 import "./CreateSet.scss"
@@ -19,6 +19,7 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
   index: number;
 }) => {
   const [enabled, setEnabled] = useState(false)
+  const [showTimeline, setShowTimeline] = useState(false)
   const setLength = set?.reduce((total, song) => {
     return total += song.length
   }, 0)
@@ -38,14 +39,17 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
   return (
     <div className="CreateSet">
       <FlexBox flexDirection="column" gap="1rem">
-        <TempoWave set={set} />
         <HeaderBox>
           <FlexBox gap=".5rem" alignItems="center">
             <h4>Set {index}</h4>
             <span>{pluralize('minute', setLength, true)}</span>
           </FlexBox>
-          <CollapsingButton isDisabled={isDisabledRemove} icon={faTrash} label="Remove set" kind="danger" onClick={onRemove} />
+          <FlexBox gap=".5rem">
+            <CollapsingButton icon={showTimeline ? faEyeSlash : faEye} label={showTimeline ? "Hide timeline" : "Show timeline"} onClick={() => setShowTimeline(!showTimeline)} />
+            {!isDisabledRemove && <CollapsingButton icon={faTrash} label="Remove set" kind="danger" onClick={onRemove} />}
+          </FlexBox>
         </HeaderBox>
+        {showTimeline && <TempoWave set={set} />}
           <Droppable droppableId={setKey} type="SONG" direction="vertical">
             {(provided, snapshot) => (
               <div

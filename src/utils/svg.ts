@@ -1,6 +1,8 @@
 import { Song } from "typings"
 
 const getY = (tempo: string) => {
+  // scale is based on 13 high svg
+  // should make this more responsive
   switch (tempo) {
     case 'ballad':
       return 12
