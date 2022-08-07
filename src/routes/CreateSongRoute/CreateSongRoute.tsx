@@ -1,8 +1,8 @@
-import { faCheckSquare, faCircleDot, faSave } from "@fortawesome/free-solid-svg-icons";
+import { faCheckSquare, faCircleDot, faSave, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSong } from "api";
-import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, Input, Label, Loader, MaxHeightContainer } from "components";
+import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, HeaderBox, Input, Label, Loader, MaxHeightContainer, Modal, SongImport } from "components";
 import { useGetCurrentBand } from "hooks";
 import React, { MouseEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,9 +25,11 @@ export const CreateSongRoute = () => {
   const [rank, setRank] = useState<'exclude' | 'star'>()
   const [note, setNote] = useState('')
 
+  const [showImport, setShowImport] = useState(false)
+
   const queryClient = useQueryClient()
   const bandQuery = useGetCurrentBand()
-  const bandId = bandQuery.data?.id
+  const bandId = bandQuery.data?.id || ''
 
   const createSongMutation = useMutation(createSong, {
     onMutate: async (newSong) => {
@@ -50,7 +52,7 @@ export const CreateSongRoute = () => {
     createSongMutation.mutate({
       name,
       length,
-      bands: [bandQuery.data?.id || ''],
+      bands: [bandId],
       is_cover: isCover,
       key_letter: keyLetter,
       is_minor: isMinor || false,
@@ -76,20 +78,23 @@ export const CreateSongRoute = () => {
       <MaxHeightContainer
         fullHeight
         header={
-          <FlexBox padding="1rem">
-            <Breadcrumbs
-              crumbs={[
-                {
-                  to: '/songs',
-                  label: 'Songs'
-                },
-                {
-                  to: '/create-song',
-                  label: 'Create song'
-                }
-              ]}
-            />
-          </FlexBox>
+          <HeaderBox>
+            <FlexBox padding="1rem">
+              <Breadcrumbs
+                crumbs={[
+                  {
+                    to: '/songs',
+                    label: 'Songs'
+                  },
+                  {
+                    to: '/create-song',
+                    label: 'Create song'
+                  }
+                ]}
+              />
+            </FlexBox>
+            <Button kind="secondary" icon={faUpload} isRounded onClick={() => setShowImport(true)}>Import song(s)</Button>
+          </HeaderBox>
         }
       >
         <FlexBox padding="1rem" gap="1rem" flexDirection="column">
@@ -174,6 +179,13 @@ export const CreateSongRoute = () => {
           </form>
         </FlexBox>
       </MaxHeightContainer>
+      {showImport && (
+        <Modal offClick={() => setShowImport(false)}>
+          <div className="CreateSongRoute__modal">
+            <SongImport onClose={() => setShowImport(false)} />
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

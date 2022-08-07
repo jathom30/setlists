@@ -2,7 +2,7 @@ import { Song } from "typings"
 
 const getY = (tempo: string) => {
   // scale is based on 13 high svg
-  // should make this more responsive
+  // TODO should make this more responsive
   switch (tempo) {
     case 'ballad':
       return 12
@@ -39,5 +39,6 @@ export const getPointsWithCurve = (coords: {x: number, y: number}[]) => coords.m
   const y1 = coords[i - 1].y
   // y2 is current point's y
   const y2 = coord.y
+  // C = bezier curve
   return `C ${curveX} ${y1}, ${curveX} ${y2} ${coord.x} ${coord.y}`
 })

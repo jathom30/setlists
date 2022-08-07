@@ -1,3 +1,8 @@
 .CreateSongRoute {
   height: 100%;
+  &__modal {
+    background: var(--color-component-background);
+    border-radius: .25rem;
+    margin: 1rem;
+  }
 }
