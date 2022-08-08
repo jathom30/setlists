@@ -31,6 +31,8 @@ export type Set = {
   parent_list: string[]
 }
 
+export type SongFeel = 'blues' | 'country' | 'funk' | 'latin' | 'rock' | 'swing' | 'waltz' | 'other'
+
 export type Song = {
   id: string
   length: number
@@ -44,6 +46,7 @@ export type Song = {
   tempo: string
   position?: 'opener' | 'closer'
   rank?: 'exclude' | 'star'
+  feel?: SongFeel[]
 }
 
 export type SetlistCreationType = 'auto' | 'manual'
