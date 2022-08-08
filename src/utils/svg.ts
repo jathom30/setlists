@@ -42,3 +42,26 @@ export const getPointsWithCurve = (coords: {x: number, y: number}[]) => coords.m
   // C = bezier curve
   return `C ${curveX} ${y1}, ${curveX} ${y2} ${coord.x} ${coord.y}`
 })
+
+function getCoordinatesForPercent(percent: number) {
+  console.log(percent)
+  const x = Math.cos(2 * Math.PI * percent);
+  const y = Math.sin(2 * Math.PI * percent);
+  return [x, y];
+}
+
+export const createSlices = (slices: {percent: number; color: string, name: string}[]) => {
+  let cumulativePercent = 0
+  return slices.map(slice => {
+    const [startX, startY] = getCoordinatesForPercent(cumulativePercent)
+    cumulativePercent += slice.percent
+    const [endX, endY] = getCoordinatesForPercent(cumulativePercent)
+    const largeArcFlag = slice.percent > .5 ? 1 : 0
+    const pathData = [
+      `M ${startX} ${startY}`, // Move
+      `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`, // Arc
+      `L 0 0 z`, // Line
+    ].join(' ')
+    return {pathData, color: slice.color, name: slice.name}
+  })
+}

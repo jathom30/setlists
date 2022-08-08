@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useGetCurrentBand, useOnClickOutside, useSetlist, useSongs } from "hooks";
+import React, { useRef, useState } from "react";
+import { useOnClickOutside, useSetlist, useSongs } from "hooks";
 import { Breadcrumbs, Button, CollapsingButton, CreateSet, DeleteWarning, FlexBox, Group, HeaderBox, Loader, MaxHeightContainer, Modal, Popover } from "components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PARENT_LISTS_QUERY, PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
@@ -20,9 +20,6 @@ export const SetlistRoute = () => {
   useOnClickOutside([buttonRef, contentRef], () => setShowSettings(false))
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-
-  const bandQuery = useGetCurrentBand()
-  const bandId = bandQuery.data?.id
 
   const setlistQuery = useQuery(
     [PARENT_LIST_QUERY, setlistId],
@@ -64,10 +61,6 @@ export const SetlistRoute = () => {
       queryClient.invalidateQueries([SETLISTS_QUERY, setlistId])
     }
   })
-
-  useEffect(() => {
-    console.log(sets)
-  }, [sets])
 
   const updateSetsMutation = useMutation(updateSets, {
     onSuccess: () => setHasChanged(false)

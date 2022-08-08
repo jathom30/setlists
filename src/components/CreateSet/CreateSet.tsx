@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, AddSong, TempoWave } from "components";
+import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, Label, AddSong, TempoWave, FeelChart } from "components";
 import pluralize from "pluralize";
 import { Song } from "typings";
 import { Draggable, Droppable} from 'react-beautiful-dnd'
@@ -49,7 +49,18 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
             {!isDisabledRemove && <CollapsingButton icon={faTrash} label="Remove set" kind="danger" onClick={onRemove} />}
           </FlexBox>
         </HeaderBox>
-        {showTimeline && <TempoWave set={set} />}
+        {showTimeline && (
+          <>
+            <FlexBox flexDirection="column" gap=".25rem">
+              <Label>Feels</Label>
+              <FeelChart songs={set} />
+            </FlexBox>
+            <FlexBox flexDirection="column" gap=".25rem">
+              <Label>Tempos</Label>
+              <TempoWave set={set} />
+            </FlexBox>
+          </>
+        )}
           <Droppable droppableId={setKey} type="SONG" direction="vertical">
             {(provided, snapshot) => (
               <div

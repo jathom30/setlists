@@ -35,5 +35,3 @@ export const TempoWave = ({set}: {set: Song[]}) => {
     </div>
   )
 }
-
-// TODO ability to hide/show
