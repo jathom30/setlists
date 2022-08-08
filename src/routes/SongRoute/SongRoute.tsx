@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useState } from "react";
+import React, { MouseEvent, useState } from "react";
 import { faCheckSquare, faCircleDot, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import Select from "react-select";
 import { Song } from "typings";
 import './SongRoute.scss'
 import { capitalizeFirstLetter } from "utils";
-import { useDebounce, useGetCurrentBand } from "hooks";
+import { useDebouncedCallback, useGetCurrentBand } from "hooks";
 
 export const SongRoute = () => {
   const { songId } = useParams()
@@ -22,6 +22,7 @@ export const SongRoute = () => {
   const bandQuery = useGetCurrentBand()
   const bandId = bandQuery.data?.id
 
+  const [name, setName] = useState('')
   
   const songQuery = useQuery([SONG_QUERY, songId], async () => {
     const response = await getSong(songId || '')
@@ -32,12 +33,6 @@ export const SongRoute = () => {
     },
   })
   
-  const [name, setName] = useState('')
-  const debouncedName = useDebounce(name, 500)
-
-  useEffect(() => {
-    handleUpdateDetails('name', debouncedName)
-  }, [debouncedName])
 
   const updateSongMutation = useMutation(updateSong, {
     onMutate: async (newSong) => {
@@ -66,6 +61,14 @@ export const SongRoute = () => {
     })
   }
 
+  const debouncedName = useDebouncedCallback((newName: string) => {
+    handleUpdateDetails('name', newName)
+  }, 500)
+
+  const handleNameChange = (val: string) => {
+    setName(val)
+    debouncedName(val)
+  }
 
   const deleteSongMutation = useMutation(deleteSong, {
     onMutate: async (deletedId) => {
@@ -125,13 +128,13 @@ export const SongRoute = () => {
             <Label>Details</Label>
             <div className="SongRoute__details">
               <FlexBox flexDirection="column" gap="1rem">
-                <Input value={name} onChange={setName} name="name" label="Name" />
+                <Input value={name} onChange={handleNameChange} name="name" label="Name" />
   
                 <FlexBox flexDirection="column" gap=".25rem">
                   <Label>Key</Label>
                   <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                     <Select
-                      defaultValue={song?.key_letter && {label: song.key_letter, value: song.key_letter}}
+                      defaultValue={{label: song.key_letter, value: song.key_letter}}
                       menuPortalTarget={document.body}
                       options={keyLetters.map(key => ({label: key, value: key}))}
                       onChange={option => {

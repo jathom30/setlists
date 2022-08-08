@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Song } from "typings";
 import { createSong } from "api";
 import { SONGS_QUERY } from "queryKeys";
+import { RateLimit } from "async-sema";
 import { useNavigate } from "react-router-dom";
 import { useGetCurrentBand } from "hooks";
 
@@ -16,8 +17,10 @@ export const SongImport = ({onClose}: {onClose: () => void}) => {
   const bandId = bandQuery.data?.id || ''
 
   const createSongsMutation = useMutation(async (songs: Omit<Song, 'id'>[]) => {
-    // TODO do not exceed more than 5 requests per second
+    const limit = RateLimit(5) // requests per second
+
     const responses = songs.map(async song => {
+      await limit()
       const response = await createSong(song)
       return response[0].fields as unknown as Song
     })
@@ -30,6 +33,7 @@ export const SongImport = ({onClose}: {onClose: () => void}) => {
   })
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
     const file = e.target.files?.[0]
     if (!file) return
     const csvText = await file.text()
