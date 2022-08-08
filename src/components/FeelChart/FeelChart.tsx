@@ -28,7 +28,7 @@ export const FeelChart = ({songs}: {songs: Song[]}) => {
   return (
     <div className="FeelChart">
       <FlexBox gap="1rem" alignItems="center" justifyContent="center">
-        <svg viewBox="-1 -1 2 2" style={{transform: 'rotate(-90deg)'}}>
+        <svg version="1.1" preserveAspectRatio="xMinYMin meet" viewBox="-1 -1 2 2" style={{transform: 'rotate(-90deg)'}}>
           <circle r={radius} cx={0} cy={0} fill="white" />
           {slices.map(slice => (
             <path onMouseOver={() => console.log('over')} key={slice.pathData} d={slice.pathData} fill={slice.color} />
