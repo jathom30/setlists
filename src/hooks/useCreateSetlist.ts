@@ -44,8 +44,8 @@ export const useCreateSetlist = (sets: Record<string, Song[]>, name: string) => 
     onSuccess: (data) => {
       const parentId = data[0].id
       createSetMutation.mutate(parentId, {
-        onSuccess: () => {
-          navigate('/setlists')
+        onSuccess: (data) => {
+          navigate(`/setlists/${parentId}`)
         }
       })
     }

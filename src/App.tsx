@@ -78,4 +78,3 @@ export default App;
 // ? save settings of auto-gen when going back to prev route
 // edit set name when viewing
 // when switching bands, reroute if looking at specific song or setlist
-// ! add FEEL to song

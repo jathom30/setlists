@@ -11,7 +11,8 @@ import { keyLetters, majorMinorOptions, tempos } from "songConstants";
 import { capitalizeFirstLetter } from "utils";
 import './CreateSongRoute.scss'
 import { SONGS_QUERY } from "queryKeys";
-import { Song } from "typings";
+import { Song, SongFeel } from "typings";
+import { feels as songFeels } from "songConstants";
 
 export const CreateSongRoute = () => {
   const navigate = useNavigate()
@@ -24,6 +25,7 @@ export const CreateSongRoute = () => {
   const [position, setPosition] = useState<'opener' | 'closer'>()
   const [rank, setRank] = useState<'exclude' | 'star'>()
   const [note, setNote] = useState('')
+  const [feels, setFeels] = useState<SongFeel[]>()
 
   const [showImport, setShowImport] = useState(false)
 
@@ -42,8 +44,8 @@ export const CreateSongRoute = () => {
       }
       return { prevSongs }
     },
-    onSuccess: () => {
-      navigate('/songs')
+    onSuccess: (data) => {
+      navigate(`/songs/${data[0].id}`)
     }
   })
 
@@ -59,7 +61,8 @@ export const CreateSongRoute = () => {
       tempo,
       notes: note,
       position,
-      rank
+      rank,
+      feel: feels,
     })
   }
 
@@ -131,21 +134,36 @@ export const CreateSongRoute = () => {
               </FlexBox>
               
               <FlexBox flexDirection="column" gap=".25rem">
-                <Label required>Tempo</Label>
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
-                  <Select
-                    placeholder="Select a tempo..."
-                    menuPortalTarget={document.body}
-                    options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
-                    onChange={option => {
-                      if (!option) return
-                      setTempo(option.value)
-                    }}
-                  />
+                  <FlexBox flexDirection="column" gap=".25rem">
+                    <Label required>Tempo</Label>
+                    <Select
+                      placeholder="Select a tempo..."
+                      menuPortalTarget={document.body}
+                      options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
+                      onChange={option => {
+                        if (!option) return
+                        setTempo(option.value)
+                      }}
+                    />
+                  </FlexBox>
+                  <FlexBox flexDirection="column" gap="0.25rem">
+                    <Label>Feel</Label>
+                    <Select
+                      isMulti
+                      defaultValue={feels && feels.map(f => ({label: capitalizeFirstLetter(f), value: f}))}
+                      onChange={newFeels => {
+                        if (!newFeels) return
+                        setFeels(newFeels.map(f => f.value))
+                      }}
+                      options={songFeels.map(feel => ({label: capitalizeFirstLetter(feel), value: feel}))}
+                    />
+                  </FlexBox>
                 </GridBox>
               </FlexBox>
 
-              <FlexBox flexDirection="column" alignItems="flex-start"  gap="1rem">
+              <FlexBox flexDirection="column" alignItems="flex-start" gap=".25rem">
+                <Label>Cover</Label>
                 <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
                   <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
                 </Button>

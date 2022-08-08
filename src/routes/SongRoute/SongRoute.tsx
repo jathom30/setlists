@@ -4,12 +4,12 @@ import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteSong, updateSong, getSong } from "api";
 import { AddNote, Breadcrumbs, Button, DeleteWarning, FlexBox, GridBox, Label, LabelInput, Loader, MaxHeightContainer, Modal, Input, HeaderBox, CollapsingButton } from "components";
-import { keyLetters, majorMinorOptions, tempos } from "songConstants";
+import { feels, keyLetters, majorMinorOptions, tempos } from "songConstants";
 import pluralize from "pluralize";
 import { SONGS_QUERY, SONG_QUERY } from "queryKeys";
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
-import { Song } from "typings";
+import { Song, SongFeel } from "typings";
 import './SongRoute.scss'
 import { capitalizeFirstLetter } from "utils";
 import { useDebouncedCallback, useGetCurrentBand } from "hooks";
@@ -52,7 +52,7 @@ export const SongRoute = () => {
     }
   })
 
-  const handleUpdateDetails = (field: keyof Song, newVal?: string | number | boolean | string[]) => {
+  const handleUpdateDetails = (field: keyof Song, newVal?: string | number | boolean | string[] | SongFeel[]) => {
     if (!songQuery.isSuccess) { return }
     const song = songQuery.data
     updateSongMutation.mutate({
@@ -153,10 +153,10 @@ export const SongRoute = () => {
                     />
                   </GridBox>
                 </FlexBox>
-  
-                <FlexBox flexDirection="column" gap=".25rem">
-                  <Label>Tempo</Label>
-                  <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+
+                <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+                  <FlexBox flexDirection="column" gap="0.25rem">
+                    <Label>Tempo</Label>
                     <Select
                       defaultValue={song?.tempo && {label: capitalizeFirstLetter(song.tempo), value: song.tempo}}
                       menuPortalTarget={document.body}
@@ -166,9 +166,21 @@ export const SongRoute = () => {
                         handleUpdateDetails('tempo', option.value)
                       }}
                     />
-                  </GridBox>
-                </FlexBox>
-  
+                  </FlexBox>
+                  <FlexBox flexDirection="column" gap="0.25rem">
+                    <Label>Feel</Label>
+                    <Select
+                      isMulti
+                      defaultValue={song.feel && song.feel.map(f => ({label: capitalizeFirstLetter(f), value: f}))}
+                      onChange={newFeels => {
+                        if (!newFeels || !song.feel) return
+                        handleUpdateDetails('feel', newFeels.map(f => f.value))
+                      }}
+                      options={feels.map(feel => ({label: capitalizeFirstLetter(feel), value: feel}))}
+                    />
+                  </FlexBox>
+                </GridBox>
+
                 <FlexBox flexDirection="column" gap=".25rem">
                   <Label>Length</Label>
                   <LabelInput step={1} value={song?.length || 0} onSubmit={val => handleUpdateDetails('length', parseFloat(val as string))}>
@@ -176,7 +188,8 @@ export const SongRoute = () => {
                   </LabelInput>
                 </FlexBox>
   
-                <FlexBox alignItems="center" gap=".5rem">
+                <FlexBox flexDirection="column" alignItems="flex-start" gap=".25rem">
+                  <Label>Cover</Label>
                   <Button onClick={() => handleUpdateDetails('is_cover', !song?.is_cover)} kind="text" icon={song?.is_cover ? faCheckSquare : faSquare}>
                     <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
                   </Button>
