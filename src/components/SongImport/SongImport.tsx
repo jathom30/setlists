@@ -1,6 +1,6 @@
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { faDownload, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FlexBox, HeaderBox, Button, Group } from "components";
+import { FlexBox, HeaderBox, Button, Group, Loader } from "components";
 import { readSongCSV } from "utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Song } from "typings";
@@ -9,18 +9,24 @@ import { SONGS_QUERY } from "queryKeys";
 import { RateLimit } from "async-sema";
 import { useNavigate } from "react-router-dom";
 import { useGetCurrentBand } from "hooks";
+import './SongImport.scss'
 
 export const SongImport = ({onClose}: {onClose: () => void}) => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const bandQuery = useGetCurrentBand()
   const bandId = bandQuery.data?.id || ''
+  const [progress, setProgress] = useState({success: 0, total: 0})
 
   const createSongsMutation = useMutation(async (songs: Omit<Song, 'id'>[]) => {
     const limit = RateLimit(5) // requests per second
-
-    const responses = songs.map(async song => {
+    
+    const responses = songs.map(async (song, i) => {
       await limit()
+      setProgress(prevProgress => ({
+        total: songs.length,
+        success: prevProgress.success + 1
+      }))
       const response = await createSong(song)
       return response[0].fields as unknown as Song
     })
@@ -65,10 +71,15 @@ export const SongImport = ({onClose}: {onClose: () => void}) => {
             <Button icon={faDownload}>Template</Button>
           </a>
         </FlexBox>
-        <FlexBox justifyContent="flex-end" gap="1rem">
-          <Button>Cancel</Button>
-          <Button kind="primary">Upload</Button>
-        </FlexBox>
+        {createSongsMutation.isLoading && (
+          <div className="SongImport__absolute">
+            <Loader />
+            <span>Importing {progress.success} out of {progress.total}</span>
+            <div className="SongImport__loading-bar">
+              <div className="SongImport__loading-child" style={{width: `${(progress.success / progress.total * 100 || 0)}%`}} />
+            </div>
+          </div>
+        )}
       </FlexBox>
     </div>
   )
