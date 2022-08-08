@@ -1,10 +1,9 @@
 import { FlexBox } from "components";
 import React from "react";
+import { heatColors } from "songConstants";
 import { Song, SongFeel } from "typings";
 import { capitalizeFirstLetter, createSlices } from "utils";
 import './FeelChart.scss'
-
-const feelColors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'grey', 'black']
 
 export const FeelChart = ({songs}: {songs: Song[]}) => {
   const radius = 1
@@ -20,7 +19,7 @@ export const FeelChart = ({songs}: {songs: Song[]}) => {
     return {
       percent: feels.filter(f => f === feel).length / totalFeels,
       name: feel,
-      color: feelColors[i],
+      color: heatColors[i],
     }
   })
 
