@@ -13,7 +13,7 @@ export const missingSong: Song = {
   is_cover: false,
   key_letter: '',
   is_minor: false,
-  tempo: '',
+  tempo: 3,
 }
 
 export const useSongs = () => {

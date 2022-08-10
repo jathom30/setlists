@@ -1,21 +1,21 @@
 import { Song } from "typings"
 
-const getY = (tempo: string) => {
+const getY = (tempo: number) => {
   // scale is based on 13 high svg
   // TODO should make this more responsive
   switch (tempo) {
-    case 'ballad':
+    case 1:
       return 12
-    case 'chill':
+    case 2:
       return 9
-    case 'medium':
+    case 3:
       return 6
-    case 'up':
+    case 4:
       return 3
-    case 'burner':
+    case 5:
       return 1
     default:
-      return 0
+      return 13
   }
 }
 const getX = (index: number, numberOfPoints: number, width: number) => {

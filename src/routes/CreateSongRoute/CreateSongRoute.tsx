@@ -2,12 +2,12 @@ import { faCheckSquare, faCircleDot, faSave, faUpload } from "@fortawesome/free-
 import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSong } from "api";
-import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, HeaderBox, Input, Label, Loader, MaxHeightContainer, Modal, SongImport } from "components";
+import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, HeaderBox, Input, Label, Loader, MaxHeightContainer, Modal, SongImport, Tempo } from "components";
 import { useGetCurrentBand } from "hooks";
 import React, { MouseEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-import { keyLetters, majorMinorOptions, tempos } from "songConstants";
+import { keyLetters, majorMinorOptions } from "songConstants";
 import { capitalizeFirstLetter } from "utils";
 import './CreateSongRoute.scss'
 import { SONGS_QUERY } from "queryKeys";
@@ -20,7 +20,7 @@ export const CreateSongRoute = () => {
   const [length, setLength] = useState(0)
   const [keyLetter, setKeyLetter] = useState('C')
   const [isMinor, setIsMinor] = useState<boolean>(false)
-  const [tempo, setTempo] = useState('')
+  const [tempo, setTempo] = useState(3)
   const [isCover, setIsCover] = useState(false)
   const [position, setPosition] = useState<'opener' | 'closer'>()
   const [rank, setRank] = useState<'exclude' | 'star'>()
@@ -104,24 +104,24 @@ export const CreateSongRoute = () => {
           <form action="submit">
             <FlexBox gap="1rem" flexDirection="column">
               <Input required label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
-              
+
               <Input required label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
-              
+
               <FlexBox flexDirection="column" gap=".25rem">
                 <Label required>Key</Label>
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                   <Select
-                    value={{label: keyLetter, value: keyLetter}}
+                    value={{ label: keyLetter, value: keyLetter }}
                     placeholder="Select a key..."
                     menuPortalTarget={document.body}
-                    options={keyLetters.map(key => ({label: key, value: key}))}
+                    options={keyLetters.map(key => ({ label: key, value: key }))}
                     onChange={option => {
                       if (!option) return
                       setKeyLetter(option.value)
                     }}
                   />
                   <Select
-                    value={{label: isMinor ? 'Minor' :'Major', value: isMinor}}
+                    value={{ label: isMinor ? 'Minor' : 'Major', value: isMinor }}
                     placeholder="Major or minor..."
                     menuPortalTarget={document.body}
                     options={majorMinorOptions}
@@ -132,31 +132,23 @@ export const CreateSongRoute = () => {
                   />
                 </GridBox>
               </FlexBox>
-              
+
               <FlexBox flexDirection="column" gap=".25rem">
                 <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                   <FlexBox flexDirection="column" gap=".25rem">
                     <Label required>Tempo</Label>
-                    <Select
-                      placeholder="Select a tempo..."
-                      menuPortalTarget={document.body}
-                      options={tempos.map(key => ({label: capitalizeFirstLetter(key), value: key}))}
-                      onChange={option => {
-                        if (!option) return
-                        setTempo(option.value)
-                      }}
-                    />
+                    <Tempo value={tempo} onChange={setTempo} />
                   </FlexBox>
                   <FlexBox flexDirection="column" gap="0.25rem">
                     <Label>Feel</Label>
                     <Select
                       isMulti
-                      defaultValue={feels && feels.map(f => ({label: capitalizeFirstLetter(f), value: f}))}
+                      defaultValue={feels && feels.map(f => ({ label: capitalizeFirstLetter(f), value: f }))}
                       onChange={newFeels => {
                         if (!newFeels) return
                         setFeels(newFeels.map(f => f.value))
                       }}
-                      options={songFeels.map(feel => ({label: capitalizeFirstLetter(feel), value: feel}))}
+                      options={songFeels.map(feel => ({ label: capitalizeFirstLetter(feel), value: feel }))}
                     />
                   </FlexBox>
                 </GridBox>
@@ -165,7 +157,7 @@ export const CreateSongRoute = () => {
               <FlexBox flexDirection="column" alignItems="flex-start" gap=".25rem">
                 <Label>Cover</Label>
                 <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
-                  <span style={{fontWeight: 'normal', fontSize: '1rem'}}>Is a cover</span>
+                  <span style={{ fontWeight: 'normal', fontSize: '1rem' }}>Is a cover</span>
                 </Button>
               </FlexBox>
 
@@ -191,7 +183,7 @@ export const CreateSongRoute = () => {
                 <Label>Notes</Label>
                 <AddNote onSave={setNote} />
               </FlexBox>
-              
+
               <Button type="submit" kind="primary" icon={faSave} onClick={handleSave} isDisabled={!isValid}>Save song</Button>
             </FlexBox>
           </form>

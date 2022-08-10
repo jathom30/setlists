@@ -1,0 +1,31 @@
+.Dial {
+  height: 1.25rem;
+  width: auto;
+  * {
+    fill: var(--color-text-subdued);
+  }
+  &--ballad {
+    .Dial__knob {
+      transform-origin: center;
+      transform: rotate(-90deg);
+    }
+  }
+  &--chill {
+    .Dial__knob {
+      transform-origin: center;
+      transform: rotate(-45deg);
+    }
+  }
+  &--up {
+    .Dial__knob {
+      transform-origin: center;
+      transform: rotate(45deg);
+    }
+  }
+  &--burner {
+    .Dial__knob {
+      transform-origin: center;
+      transform: rotate(90deg);
+    }
+  }
+}

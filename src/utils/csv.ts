@@ -28,7 +28,7 @@ export const readSongCSV = (csv: string) => {
       is_cover: csvArray[2].toLowerCase() === 'true',
       key_letter: csvArray[3],
       is_minor: csvArray[4].toLowerCase() === 'true',
-      tempo: csvArray[5].toLowerCase(),
+      tempo: parseInt(csvArray[5]),
       ...(csvArray[6] && {position: csvArray[6].toLowerCase() as Song['position']}),
       ...(csvArray[7] && {rank: csvArray[7].toLowerCase() as Song['rank']}),
       ...(feel?.length && {feel})

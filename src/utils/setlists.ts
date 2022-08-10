@@ -73,7 +73,7 @@ const filteredSongs = (filters: SetlistFilters, songs: Song[]) => {
       return song.is_cover
     }
     if (noBallads) {
-      return song.tempo !== 'ballad'
+      return song.tempo > 1
     }
     return song.rank !== 'exclude'
   })

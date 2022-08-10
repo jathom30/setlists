@@ -43,7 +43,7 @@ export type Song = {
   notes?: string
   key_letter: string
   is_minor: boolean
-  tempo: string
+  tempo: number
   position?: 'opener' | 'closer'
   rank?: 'exclude' | 'star'
   feel?: SongFeel[]
