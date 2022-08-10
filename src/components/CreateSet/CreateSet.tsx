@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, Label, AddSong, TempoWave, FeelChart } from "components";
+import React, { useContext, useEffect, useState } from "react";
+import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, DataViz, AddSong } from "components";
 import pluralize from "pluralize";
 import { Song } from "typings";
-import { Draggable, Droppable} from 'react-beautiful-dnd'
-import { faEye, faEyeSlash, faGrip, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Draggable, Droppable } from 'react-beautiful-dnd'
+import { faDatabase, faEye, faEyeSlash, faGrip, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Select from "react-select";
 import "./CreateSet.scss"
+import { WindowDimsContext } from "context";
 
-export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRemoveSong, isDisabledRemove, index}: {
+export const CreateSet = ({ set, availableSongs, setKey, onChange, onRemove, onRemoveSong, isDisabledRemove, index }: {
   set: Song[];
   availableSongs?: Song[];
   setKey: string;
@@ -19,7 +20,8 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
   index: number;
 }) => {
   const [enabled, setEnabled] = useState(false)
-  const [showTimeline, setShowTimeline] = useState(false)
+  const [showDataViz, setShowDataViz] = useState(false)
+  const { singleCol } = useContext(WindowDimsContext)
   const setLength = set?.reduce((total, song) => {
     return total += song.length
   }, 0)
@@ -34,7 +36,7 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
     }
   }, [])
 
-  if (!enabled) { return null}
+  if (!enabled) { return null }
 
   return (
     <div className="CreateSet">
@@ -45,50 +47,41 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
             <span>{pluralize('minute', setLength, true)}</span>
           </FlexBox>
           <FlexBox gap=".5rem">
-            <CollapsingButton icon={showTimeline ? faEyeSlash : faEye} label={showTimeline ? "Hide timeline" : "Show timeline"} onClick={() => setShowTimeline(!showTimeline)} />
+            {singleCol && <CollapsingButton icon={showDataViz ? faEyeSlash : faDatabase} label={showDataViz ? "Hide Data" : "Show Data"} onClick={() => setShowDataViz(!showDataViz)} />}
             {!isDisabledRemove && <CollapsingButton icon={faTrash} label="Remove set" kind="danger" onClick={onRemove} />}
           </FlexBox>
         </HeaderBox>
-        {showTimeline && (
-          <>
-            <FlexBox flexDirection="column" gap=".25rem">
-              <Label>Feels</Label>
-              <FeelChart songs={set} />
-            </FlexBox>
-            <FlexBox flexDirection="column" gap=".25rem">
-              <Label>Tempos</Label>
-              <TempoWave set={set} />
-            </FlexBox>
-          </>
+        {showDataViz && (
+          <DataViz set={set} />
         )}
-          <Droppable droppableId={setKey} type="SONG" direction="vertical">
-            {(provided, snapshot) => (
-              <div
-                className={`CreateSet__droppable ${snapshot.isDraggingOver ? 'CreateSet__droppable--is-dragging-over' : ''}`}
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                {set.map((song, i) => (
-                  <Draggable key={song.id} draggableId={song.id} index={i}>
-                    {(provided) => (
-                      <div
-                        className="CreateSet__draggable"
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                      >
-                        <SongDisplay song={song} index={i + 1} onRemove={() => onRemoveSong(song.id)}>
-                          <div className="CreateSet__song-handle" {...provided.dragHandleProps}>
-                            <FontAwesomeIcon icon={faGrip} />
-                          </div>
-                        </SongDisplay>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
+        <Droppable droppableId={setKey} type="SONG" direction="vertical">
+          {(provided, snapshot) => (
+            <div
+              className={`CreateSet__droppable ${snapshot.isDraggingOver ? 'CreateSet__droppable--is-dragging-over' : ''}`}
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {set.map((song, i) => (
+                <Draggable key={song.id} draggableId={song.id} index={i}>
+                  {(provided) => (
+                    <div
+                      className="CreateSet__draggable"
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                    >
+                      <SongDisplay song={song} index={i + 1} onRemove={() => onRemoveSong(song.id)}>
+                        <div className="CreateSet__song-handle" {...provided.dragHandleProps}>
+                          <FontAwesomeIcon icon={faGrip} />
+                        </div>
+                      </SongDisplay>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
         {set.length === 0 && (
           <Select
             placeholder="Select song to add..."
@@ -101,7 +94,7 @@ export const CreateSet = ({set, availableSongs, setKey, onChange, onRemove, onRe
             getOptionValue={song => song.id}
             defaultMenuIsOpen
           />
-      )}
+        )}
         {availableSongs && <AddSong onSelect={onChange} songs={availableSongs} />}
       </FlexBox>
     </div>

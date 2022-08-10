@@ -1,20 +1,24 @@
-import {createContext, ReactNode, useLayoutEffect, useState} from "react";
+import { createContext, ReactNode, useLayoutEffect, useState } from "react";
 
 type WindowDims = {
   width: number
   height: number
+  twoCols: boolean
+  singleCol: boolean
   isMobileWidth: boolean
 }
 
 const defaultValues = {
   width: 0,
   height: 0,
+  twoCols: false,
+  singleCol: false,
   isMobileWidth: true
 }
 
 export const WindowDimsContext = createContext<WindowDims>(defaultValues)
 
-export const WindowDimsContextProvider = ({children}: {children: ReactNode}) => {
+export const WindowDimsContextProvider = ({ children }: { children: ReactNode }) => {
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
 
@@ -32,11 +36,15 @@ export const WindowDimsContextProvider = ({children}: {children: ReactNode}) => 
     }
   }, [])
 
+  const twoCols = width <= 1400
+  const singleCol = width <= 800
   const isMobileWidth = width < 650
 
   const value = {
     width,
     height,
+    twoCols,
+    singleCol,
     isMobileWidth
   }
 

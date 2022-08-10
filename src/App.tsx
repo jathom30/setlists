@@ -7,7 +7,7 @@ import { AddBandRoute, LoginRoute } from 'routes';
 import { useGetBands } from 'hooks';
 import { routes } from 'utils';
 
-const ProtectedRoute = ({children}: {children: JSX.Element}) => {
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isLoggedIn, user, isConfirmedUser } = useIdentityContext()
 
   const bandsQuery = useGetBands()
@@ -15,15 +15,15 @@ const ProtectedRoute = ({children}: {children: JSX.Element}) => {
 
   return isLoggedIn
     ? !isConfirmedUser
-    ? (
-      <FlexBox flexDirection='column' gap="1rem" padding='1rem'>
-        <h2>Verify your email address</h2>
-        <p>A verification email has been sent to {user?.email}. To complete the sign up process, please click the link in the email.</p>
-      </FlexBox>
+      ? (
+        <FlexBox flexDirection='column' gap="1rem" padding='1rem'>
+          <h2>Verify your email address</h2>
+          <p>A verification email has been sent to {user?.email}. To complete the sign up process, please click the link in the email.</p>
+        </FlexBox>
       )
-    : (!hasBands && bandsQuery.isSuccess)
-    ? <RouteWrapper><AddBandRoute /></RouteWrapper>
-    : children
+      : (!hasBands && bandsQuery.isSuccess)
+        ? <RouteWrapper><AddBandRoute /></RouteWrapper>
+        : children
     : <LoginRoute />
 }
 
@@ -59,13 +59,13 @@ function App() {
           {routes.map(route => (
             <Route key={route.key} path={route.path} element={
               <ProtectedRoute>
-                <RouteWrapper>
-                  {route.element}
-                </RouteWrapper>
+                {/* <RouteWrapper> */}
+                {route.element}
+                {/* </RouteWrapper> */}
               </ProtectedRoute>
             } />
           ))}
-          
+
         </Routes>
       </MaxHeightContainer>
     </div>

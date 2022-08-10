@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useOnClickOutside, useSetlist, useSongs } from "hooks";
-import { Breadcrumbs, Button, CollapsingButton, CreateSet, DeleteWarning, FlexBox, Group, HeaderBox, Loader, MaxHeightContainer, Modal, Popover } from "components";
+import { Breadcrumbs, Button, CollapsingButton, CreateSet, DataViz, DeleteWarning, FeelChart, FlexBox, Group, HeaderBox, Label, Loader, MaxHeightContainer, Modal, Popover, RatioBar, TempoWave, ViewWrapper } from "components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PARENT_LISTS_QUERY, PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -25,13 +25,13 @@ export const SetlistRoute = () => {
     [PARENT_LIST_QUERY, setlistId],
     async () => {
       const response = await getSetlist(setlistId || '')
-    return response.fields as Setlist
+      return response.fields as Setlist
     },
     { enabled: !!setlistId }
   )
   const setlist = setlistQuery.data
 
-  const {songsQuery} = useSongs()
+  const { songsQuery } = useSongs()
   const {
     sets,
     addSet,
@@ -46,7 +46,7 @@ export const SetlistRoute = () => {
     setHasChanged,
   } = useSetlist()
 
-  const createSetMutation = useMutation(async ({parentId, sets}: {parentId: string, sets: Record<string, Song[]>}) => {
+  const createSetMutation = useMutation(async ({ parentId, sets }: { parentId: string, sets: Record<string, Song[]> }) => {
     const setIds = Object.keys(sets)
     const responses = setIds.map(async id => {
       const response = await createSet({
@@ -90,9 +90,9 @@ export const SetlistRoute = () => {
           [key]: sets[key]
         }
       }
-    }, {temp: {}, existing: {}})
+    }, { temp: {}, existing: {} })
     updateSetsMutation.mutate(sortedSets.existing)
-    createSetMutation.mutate({parentId: setlistId || '', sets: sortedSets.temp})
+    createSetMutation.mutate({ parentId: setlistId || '', sets: sortedSets.temp })
   }
 
   const deleteSetsMutation = useMutation(async () => {
@@ -102,7 +102,7 @@ export const SetlistRoute = () => {
       return response
     })
     return Promise.allSettled(responses)
-  }, {onSuccess: () => navigate('/')})
+  }, { onSuccess: () => navigate('/') })
 
   const deleteSetlistMutation = useMutation(deleteSetlist, {
     onMutate: async (setlistId) => {
@@ -114,7 +114,7 @@ export const SetlistRoute = () => {
         const filteredSetlists = prevSetlists.filter(setlist => setlist.id !== setlistId)
         queryClient.setQueryData([PARENT_LISTS_QUERY], filteredSetlists)
       }
-      return {prevSetlists}
+      return { prevSetlists }
     },
     onSuccess: () => {
       deleteSetsMutation.mutate(undefined, {
@@ -176,7 +176,7 @@ export const SetlistRoute = () => {
                         justifyContent="flex-start"
                         icon={showReadOnly ? faPencil : faEye}
                         kind="secondary"
-                        onClick={() => {setShowReadOnly(!showReadOnly); setShowSettings(false)}}
+                        onClick={() => { setShowReadOnly(!showReadOnly); setShowSettings(false) }}
                       >
                         {showReadOnly ? 'Edit view' : 'Read only view'}
                       </Button>
@@ -184,7 +184,7 @@ export const SetlistRoute = () => {
                         justifyContent="flex-start"
                         icon={faTrash}
                         kind="danger"
-                        onClick={() => {setDeleteWarning(true); setShowSettings(false)}}
+                        onClick={() => { setDeleteWarning(true); setShowSettings(false) }}
                       >
                         Delete setlist
                       </Button>
@@ -204,9 +204,8 @@ export const SetlistRoute = () => {
             <FlexBox paddingBottom="1rem" flexDirection="column">
               <Group>
                 <FlexBox gap="1rem" padding="1rem" justifyContent="flex-end">
-                  <Button onClick={() => {setsQuery.refetch(); setHasChanged(false)}}>Cancel</Button>
+                  <Button onClick={() => { setsQuery.refetch(); setHasChanged(false) }}>Cancel</Button>
                   <Button onClick={handleUpdate} isLoading={updateSetsMutation.isLoading} icon={faSave} kind="primary">Save</Button>
-                  {/* <Button onClick={handleSaveAsNew} icon={faCopy} kind="secondary">Save as new</Button> */}
                 </FlexBox>
               </Group>
             </FlexBox>
@@ -220,7 +219,7 @@ export const SetlistRoute = () => {
                 <FlexBox key={key} flexDirection="column">
                   <h5>Set {index + 1}</h5>
                   {sets[key].map((song, i) => (
-                    <h2 key={song.id}>{i+1}. {song.name}</h2>
+                    <h2 key={song.id}>{i + 1}. {song.name}</h2>
                   ))}
                 </FlexBox>
               ))}
@@ -229,17 +228,25 @@ export const SetlistRoute = () => {
             <>
               <DragDropContext onDragEnd={handleDragEnd}>
                 {Object.keys(sets).map((key, i) => (
-                  <CreateSet
-                    availableSongs={songsNotInSetlist}
-                    set={sets[key]}
+                  <ViewWrapper
                     key={key}
-                    setKey={key}
-                    index={i + 1}
-                    isDisabledRemove={Object.keys(sets).length === 1}
-                    onRemove={() => handleDeleteSet(key)}
-                    onRemoveSong={songId => removeSongFromSet(key, songId)}
-                    onChange={song => addSongToSet(song, key)}
-                  />
+                    right={
+                      <div style={{ position: 'sticky', top: 0 }}>
+                        <DataViz set={sets[key]} />
+                      </div>
+                    }
+                  >
+                    <CreateSet
+                      availableSongs={songsNotInSetlist}
+                      set={sets[key]}
+                      setKey={key}
+                      index={i + 1}
+                      isDisabledRemove={Object.keys(sets).length === 1}
+                      onRemove={() => handleDeleteSet(key)}
+                      onRemoveSong={songId => removeSongFromSet(key, songId)}
+                      onChange={song => addSongToSet(song, key)}
+                    />
+                  </ViewWrapper>
                 ))}
               </DragDropContext>
               {hasAvailableSongs ? (

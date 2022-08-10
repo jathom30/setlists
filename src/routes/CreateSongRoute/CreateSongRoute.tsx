@@ -2,7 +2,7 @@ import { faCheckSquare, faCircleDot, faSave, faUpload } from "@fortawesome/free-
 import { faCircle, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSong } from "api";
-import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, HeaderBox, Input, Label, Loader, MaxHeightContainer, Modal, SongImport, Tempo } from "components";
+import { AddNote, Breadcrumbs, Button, FlexBox, GridBox, HeaderBox, Input, Label, Loader, MaxHeightContainer, Modal, RouteWrapper, SongImport, Tempo } from "components";
 import { useGetCurrentBand } from "hooks";
 import React, { MouseEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -77,125 +77,127 @@ export const CreateSongRoute = () => {
   }
 
   return (
-    <div className="CreateSongRoute">
-      <MaxHeightContainer
-        fullHeight
-        header={
-          <HeaderBox>
-            <FlexBox padding="1rem">
-              <Breadcrumbs
-                crumbs={[
-                  {
-                    to: '/songs',
-                    label: 'Songs'
-                  },
-                  {
-                    to: '/create-song',
-                    label: 'Create song'
-                  }
-                ]}
-              />
-            </FlexBox>
-            <Button kind="secondary" icon={faUpload} isRounded onClick={() => setShowImport(true)}>Import song(s)</Button>
-          </HeaderBox>
-        }
-      >
-        <FlexBox padding="1rem" gap="1rem" flexDirection="column">
-          <form action="submit">
-            <FlexBox gap="1rem" flexDirection="column">
-              <Input required label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
-
-              <Input required label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
-
-              <FlexBox flexDirection="column" gap=".25rem">
-                <Label required>Key</Label>
-                <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
-                  <Select
-                    value={{ label: keyLetter, value: keyLetter }}
-                    placeholder="Select a key..."
-                    menuPortalTarget={document.body}
-                    options={keyLetters.map(key => ({ label: key, value: key }))}
-                    onChange={option => {
-                      if (!option) return
-                      setKeyLetter(option.value)
-                    }}
-                  />
-                  <Select
-                    value={{ label: isMinor ? 'Minor' : 'Major', value: isMinor }}
-                    placeholder="Major or minor..."
-                    menuPortalTarget={document.body}
-                    options={majorMinorOptions}
-                    onChange={option => {
-                      if (!option) return
-                      setIsMinor(option.value)
-                    }}
-                  />
-                </GridBox>
+    <RouteWrapper>
+      <div className="CreateSongRoute">
+        <MaxHeightContainer
+          fullHeight
+          header={
+            <HeaderBox>
+              <FlexBox padding="1rem">
+                <Breadcrumbs
+                  crumbs={[
+                    {
+                      to: '/songs',
+                      label: 'Songs'
+                    },
+                    {
+                      to: '/create-song',
+                      label: 'Create song'
+                    }
+                  ]}
+                />
               </FlexBox>
+              <Button kind="secondary" icon={faUpload} isRounded onClick={() => setShowImport(true)}>Import song(s)</Button>
+            </HeaderBox>
+          }
+        >
+          <FlexBox padding="1rem" gap="1rem" flexDirection="column">
+            <form action="submit">
+              <FlexBox gap="1rem" flexDirection="column">
+                <Input required label="Name" value={name} onChange={setName} name="name" placeholder="Song name" />
 
-              <FlexBox flexDirection="column" gap=".25rem">
-                <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
-                  <FlexBox flexDirection="column" gap=".25rem">
-                    <Label required>Tempo</Label>
-                    <Tempo value={tempo} onChange={setTempo} />
-                  </FlexBox>
-                  <FlexBox flexDirection="column" gap="0.25rem">
-                    <Label>Feel</Label>
+                <Input required label="Length (in minutes)" value={length} onChange={(val) => setLength(parseInt(val))} name="length" placeholder="Song length" />
+
+                <FlexBox flexDirection="column" gap=".25rem">
+                  <Label required>Key</Label>
+                  <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
                     <Select
-                      isMulti
-                      defaultValue={feels && feels.map(f => ({ label: capitalizeFirstLetter(f), value: f }))}
-                      onChange={newFeels => {
-                        if (!newFeels) return
-                        setFeels(newFeels.map(f => f.value))
+                      value={{ label: keyLetter, value: keyLetter }}
+                      placeholder="Select a key..."
+                      menuPortalTarget={document.body}
+                      options={keyLetters.map(key => ({ label: key, value: key }))}
+                      onChange={option => {
+                        if (!option) return
+                        setKeyLetter(option.value)
                       }}
-                      options={songFeels.map(feel => ({ label: capitalizeFirstLetter(feel), value: feel }))}
                     />
+                    <Select
+                      value={{ label: isMinor ? 'Minor' : 'Major', value: isMinor }}
+                      placeholder="Major or minor..."
+                      menuPortalTarget={document.body}
+                      options={majorMinorOptions}
+                      onChange={option => {
+                        if (!option) return
+                        setIsMinor(option.value)
+                      }}
+                    />
+                  </GridBox>
+                </FlexBox>
+
+                <FlexBox flexDirection="column" gap=".25rem">
+                  <GridBox gap="1rem" gridTemplateColumns="repeat(auto-fill, minmax(250px, 1fr))" alignItems="center">
+                    <FlexBox flexDirection="column" gap=".25rem">
+                      <Label required>Tempo</Label>
+                      <Tempo value={tempo} onChange={setTempo} />
+                    </FlexBox>
+                    <FlexBox flexDirection="column" gap="0.25rem">
+                      <Label>Feel</Label>
+                      <Select
+                        isMulti
+                        defaultValue={feels && feels.map(f => ({ label: capitalizeFirstLetter(f), value: f }))}
+                        onChange={newFeels => {
+                          if (!newFeels) return
+                          setFeels(newFeels.map(f => f.value))
+                        }}
+                        options={songFeels.map(feel => ({ label: capitalizeFirstLetter(feel), value: feel }))}
+                      />
+                    </FlexBox>
+                  </GridBox>
+                </FlexBox>
+
+                <FlexBox flexDirection="column" alignItems="flex-start" gap=".25rem">
+                  <Label>Cover</Label>
+                  <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
+                    <span style={{ fontWeight: 'normal', fontSize: '1rem' }}>Is a cover</span>
+                  </Button>
+                </FlexBox>
+
+                <FlexBox gap=".25rem" flexDirection="column">
+                  <Label>Position</Label>
+                  <FlexBox gap="1rem">
+                    <Button onClick={() => setPosition('opener')} kind="text" icon={position === 'opener' ? faCircleDot : faCircle}>Opener</Button>
+                    <Button onClick={() => setPosition('closer')} kind="text" icon={position === 'closer' ? faCircleDot : faCircle}>Closer</Button>
+                    <Button onClick={() => setPosition(undefined)} kind="text" icon={!position ? faCircleDot : faCircle}>Other</Button>
                   </FlexBox>
-                </GridBox>
-              </FlexBox>
-
-              <FlexBox flexDirection="column" alignItems="flex-start" gap=".25rem">
-                <Label>Cover</Label>
-                <Button onClick={() => setIsCover(!isCover)} kind="text" icon={isCover ? faCheckSquare : faSquare}>
-                  <span style={{ fontWeight: 'normal', fontSize: '1rem' }}>Is a cover</span>
-                </Button>
-              </FlexBox>
-
-              <FlexBox gap=".25rem" flexDirection="column">
-                <Label>Position</Label>
-                <FlexBox gap="1rem">
-                  <Button onClick={() => setPosition('opener')} kind="text" icon={position === 'opener' ? faCircleDot : faCircle}>Opener</Button>
-                  <Button onClick={() => setPosition('closer')} kind="text" icon={position === 'closer' ? faCircleDot : faCircle}>Closer</Button>
-                  <Button onClick={() => setPosition(undefined)} kind="text" icon={!position ? faCircleDot : faCircle}>Other</Button>
                 </FlexBox>
-              </FlexBox>
 
-              <FlexBox gap=".25rem" flexDirection="column">
-                <Label>Setlist auto-generation importance</Label>
-                <FlexBox gap="1rem">
-                  <Button onClick={() => setRank('exclude')} kind="text" icon={rank === 'exclude' ? faCircleDot : faCircle}>Always exclude</Button>
-                  <Button onClick={() => setRank('star')} kind="text" icon={rank === 'star' ? faCircleDot : faCircle}>Always include</Button>
-                  <Button onClick={() => setRank(undefined)} kind="text" icon={!rank ? faCircleDot : faCircle}>Other</Button>
+                <FlexBox gap=".25rem" flexDirection="column">
+                  <Label>Setlist auto-generation importance</Label>
+                  <FlexBox gap="1rem">
+                    <Button onClick={() => setRank('exclude')} kind="text" icon={rank === 'exclude' ? faCircleDot : faCircle}>Always exclude</Button>
+                    <Button onClick={() => setRank('star')} kind="text" icon={rank === 'star' ? faCircleDot : faCircle}>Always include</Button>
+                    <Button onClick={() => setRank(undefined)} kind="text" icon={!rank ? faCircleDot : faCircle}>Other</Button>
+                  </FlexBox>
                 </FlexBox>
-              </FlexBox>
 
-              <FlexBox flexDirection="column" gap=".25rem">
-                <Label>Notes</Label>
-                <AddNote onSave={setNote} />
-              </FlexBox>
+                <FlexBox flexDirection="column" gap=".25rem">
+                  <Label>Notes</Label>
+                  <AddNote onSave={setNote} />
+                </FlexBox>
 
-              <Button type="submit" kind="primary" icon={faSave} onClick={handleSave} isDisabled={!isValid}>Save song</Button>
-            </FlexBox>
-          </form>
-        </FlexBox>
-      </MaxHeightContainer>
-      {showImport && (
-        <Modal offClick={() => setShowImport(false)}>
-          <div className="CreateSongRoute__modal">
-            <SongImport onClose={() => setShowImport(false)} />
-          </div>
-        </Modal>
-      )}
-    </div>
+                <Button type="submit" kind="primary" icon={faSave} onClick={handleSave} isDisabled={!isValid}>Save song</Button>
+              </FlexBox>
+            </form>
+          </FlexBox>
+        </MaxHeightContainer>
+        {showImport && (
+          <Modal offClick={() => setShowImport(false)}>
+            <div className="CreateSongRoute__modal">
+              <SongImport onClose={() => setShowImport(false)} />
+            </div>
+          </Modal>
+        )}
+      </div>
+    </RouteWrapper>
   )
 }

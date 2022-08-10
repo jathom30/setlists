@@ -1,0 +1,10 @@
+.RatioBar {
+  height: 2rem;
+  width: 100%;
+  border-radius: .25rem;
+  overflow: hidden;
+  &__inner {
+    height: 100%;
+    width: 50%;
+  }
+}

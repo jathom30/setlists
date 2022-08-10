@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {Breadcrumbs, FlexBox, MaxHeightContainer} from 'components'
+import { Breadcrumbs, FlexBox, MaxHeightContainer, RouteWrapper } from 'components'
 import { Route, Routes, useLocation } from "react-router-dom";
 import './CreateSetlistRoute.scss'
 import { ManualSetlistCreation } from "./ManualSetlistCreation";
@@ -32,36 +32,38 @@ export const CreateSetlistRoute = () => {
   }
 
   return (
-    <div className="CreateSetlistRoute">
-      <MaxHeightContainer
-        fullHeight
-        header={
-          <FlexBox padding="1rem">
-            <Breadcrumbs
-              crumbs={[
-                {
-                  to: '/setlists',
-                  label: 'Setlists'
-                },
-                {
-                  to: '/create-setlist',
-                  label: 'Create setlist'
-                },
-                ...(location.pathname.includes('auto') ? [autoCrumb] : []),
-                ...(location.pathname.includes('manual') ? [manualCrumb] : []),
-                ...(location.pathname.includes('temp') ? [tempCrumb] : [])
-              ]}
-            />
-          </FlexBox>
-        }
-      >
-        <Routes>
-          <Route path="/" element={<TypeSelection />} />
-          <Route path="/auto" element={<AutoSetlistCreation onSubmit={handleSubmitAuto} />} />
-          <Route path="/auto/temp" element={<AutoGenTempDisplay initialSets={autoSets} name={autoName} onNameChange={setAutoName} />} />
-          <Route path="/manual" element={<ManualSetlistCreation />} />
-        </Routes>
-      </MaxHeightContainer>
-    </div>
+    <RouteWrapper>
+      <div className="CreateSetlistRoute">
+        <MaxHeightContainer
+          fullHeight
+          header={
+            <FlexBox padding="1rem">
+              <Breadcrumbs
+                crumbs={[
+                  {
+                    to: '/setlists',
+                    label: 'Setlists'
+                  },
+                  {
+                    to: '/create-setlist',
+                    label: 'Create setlist'
+                  },
+                  ...(location.pathname.includes('auto') ? [autoCrumb] : []),
+                  ...(location.pathname.includes('manual') ? [manualCrumb] : []),
+                  ...(location.pathname.includes('temp') ? [tempCrumb] : [])
+                ]}
+              />
+            </FlexBox>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<TypeSelection />} />
+            <Route path="/auto" element={<AutoSetlistCreation onSubmit={handleSubmitAuto} />} />
+            <Route path="/auto/temp" element={<AutoGenTempDisplay initialSets={autoSets} name={autoName} onNameChange={setAutoName} />} />
+            <Route path="/manual" element={<ManualSetlistCreation />} />
+          </Routes>
+        </MaxHeightContainer>
+      </div>
+    </RouteWrapper>
   )
 }

@@ -50,7 +50,7 @@ function getCoordinatesForPercent(percent: number) {
   return [x, y];
 }
 
-export const createSlices = (slices: {percent: number; color: string, name: string}[]) => {
+export const createPaths = (slices: {percent: number; color: string, name: string}[]) => {
   let cumulativePercent = 0
   return slices.map(slice => {
     const [startX, startY] = getCoordinatesForPercent(cumulativePercent)
@@ -62,6 +62,6 @@ export const createSlices = (slices: {percent: number; color: string, name: stri
       `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`, // Arc
       `L 0 0 z`, // Line
     ].join(' ')
-    return {pathData, color: slice.color, name: slice.name}
+    return {pathData, color: slice.color, name: slice.name, percent: slice.percent * 100}
   })
 }
