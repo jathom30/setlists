@@ -76,4 +76,5 @@ export default App;
 
 // TODO 
 // ? save settings of auto-gen when going back to prev route
-// edit set name when viewing
+// ? if editing song from setlist, return to setlist on save?
+// Songsroute filters (genre, etc)

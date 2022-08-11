@@ -1,26 +1,16 @@
-import React, { ReactNode, useContext } from "react";
-import { WindowDimsContext } from "context";
+import React, { ReactNode } from "react";
 import './ViewWrapper.scss'
 
-export const ViewWrapper = ({ children, left, right }: { children: ReactNode; left?: ReactNode; right?: ReactNode }) => {
-  const { twoCols, singleCol } = useContext(WindowDimsContext)
+export const ViewWrapper = ({ children, right }: { children: ReactNode; right?: ReactNode }) => {
 
 
   return (
     <div className="ViewWrapper">
-      <div className="ViewWrapper__left-side">
-        {!(twoCols || singleCol) && left}
-      </div>
       <div className="ViewWrapper__main">
         {children}
       </div>
-      <div className="ViewWrapper__right-side">
-        {twoCols ? (
-          <>
-            {left}
-            {right}
-          </>
-        ) : right}
+      <div className="ViewWrapper__side">
+        {right}
       </div>
     </div>
   )

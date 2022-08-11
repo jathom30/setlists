@@ -2,30 +2,20 @@
   display: grid;
   gap: 1rem;
 
-  &__left-side {
-    grid-area: left;
-  }
-  &__right-side {
-    grid-area: right;
+  &__side {
+    grid-area: side;
   }
   &__main {
     grid-area: main;
     min-width: 0;
   }
 
-  grid-template-columns: 400px 1fr 400px;
-  grid-template-areas: 'left main right';
-  @media screen and (max-width: 1400px) {
-    grid-template-columns: 1fr 300px;
-    grid-template-areas: 'main right';
-    &__left-side {
-      display: none;
-    }
-  }
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas: 'main side';
   @media screen and (max-width: 800px) {
     grid-template-columns: 1fr;
     gap: 0;
-    &__right-side {
+    &__side {
       display: none;
     }
   }
