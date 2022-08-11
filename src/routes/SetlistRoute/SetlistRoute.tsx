@@ -1,20 +1,22 @@
-import React, { useRef, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { useOnClickOutside, useSetlist, useSongs } from "hooks";
-import { Breadcrumbs, Button, CollapsingButton, CreateSet, DataViz, DeleteWarning, FeelChart, FlexBox, Group, HeaderBox, Label, Loader, MaxHeightContainer, Modal, Popover, RatioBar, TempoWave, ViewWrapper } from "components";
+import { Breadcrumbs, Button, CollapsingButton, CreateSet, DataViz, DeleteWarning, FeelChart, FlexBox, Group, HeaderBox, Input, Label, Loader, MaxHeightContainer, Modal, Popover, RatioBar, TempoWave, ViewWrapper } from "components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PARENT_LISTS_QUERY, PARENT_LIST_QUERY, SETLISTS_QUERY } from "queryKeys";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteSetlist, deleteSet, getSetlist, updateSets, createSet } from "api";
+import { deleteSetlist, deleteSet, getSetlist, updateSets, createSet, updateSetlist } from "api";
 import { Setlist, Song } from 'typings'
 import { DragDropContext } from "react-beautiful-dnd";
 import './SetlistRoute.scss'
-import { faCog, faEye, faPencil, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCog, faEdit, faEye, faPencil, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export const SetlistRoute = () => {
   const { setlistId } = useParams()
   const [deleteWarning, setDeleteWarning] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showReadOnly, setShowReadOnly] = useState(false)
+  const [setlistName, setSetlistName] = useState('')
+  const [showNameEdit, setShowNameEdit] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   useOnClickOutside([buttonRef, contentRef], () => setShowSettings(false))
@@ -27,7 +29,12 @@ export const SetlistRoute = () => {
       const response = await getSetlist(setlistId || '')
       return response.fields as Setlist
     },
-    { enabled: !!setlistId }
+    {
+      enabled: !!setlistId,
+      onSuccess(data) {
+        setSetlistName(data.name)
+      },
+    }
   )
   const setlist = setlistQuery.data
 
@@ -137,6 +144,37 @@ export const SetlistRoute = () => {
     removeSet(setId)
   }
 
+  const updateSetlistMutation = useMutation(updateSetlist, {
+    onMutate: async () => {
+      await queryClient.cancelQueries([PARENT_LIST_QUERY, setlistId])
+
+      const prevSetlist = queryClient.getQueryData<Setlist>([PARENT_LIST_QUERY, setlistId])
+
+      if (prevSetlist) {
+        queryClient.setQueryData([PARENT_LIST_QUERY, setlistId], {
+          ...prevSetlist,
+          name: setlistName
+        })
+      }
+      return { prevSetlist }
+    },
+    onSuccess: () => {
+      setShowNameEdit(false)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries([PARENT_LIST_QUERY, setlistId])
+    }
+  })
+
+  const handleSubmitNameChange = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    updateSetlistMutation.mutate({
+      id: setlistId || '', setlist: {
+        name: setlistName
+      }
+    })
+  }
+
   const isLoading = songsQuery?.isLoading || setsQuery.isLoading || setlistQuery.isLoading
 
   if (isLoading) {
@@ -172,6 +210,14 @@ export const SetlistRoute = () => {
                 content={
                   <div className="SetlistRoute__content" ref={contentRef}>
                     <FlexBox flexDirection="column" padding="1rem" gap=".5rem">
+                      <Button
+                        justifyContent="flex-start"
+                        icon={faEdit}
+                        kind="secondary"
+                        onClick={() => { setShowNameEdit(!showNameEdit); setShowSettings(false) }}
+                      >
+                        Update setlist name
+                      </Button>
                       <Button
                         justifyContent="flex-start"
                         icon={showReadOnly ? faPencil : faEye}
@@ -268,6 +314,21 @@ export const SetlistRoute = () => {
           <DeleteWarning onClose={() => setDeleteWarning(false)} onDelete={handleDelete} isLoading={deleteSetlistMutation.isLoading || deleteSetsMutation.isLoading}>
             <span>This will perminantly delete <strong>{setlist?.name}</strong>.</span>
           </DeleteWarning>
+        </Modal>
+      )}
+      {showNameEdit && (
+        <Modal offClick={() => setShowNameEdit(false)}>
+          <div className="SetlistRoute__modal">
+            <form action="submit" onSubmit={handleSubmitNameChange}>
+              <FlexBox flexDirection="column" gap="1rem">
+                <Input value={setlistName} onChange={setSetlistName} name="setlist-name" />
+                <FlexBox justifyContent="flex-end" gap="1rem">
+                  <Button onClick={() => setShowNameEdit(false)}>Cancel</Button>
+                  <Button type="submit" kind="primary" isLoading={updateSetlistMutation.isLoading}>Save</Button>
+                </FlexBox>
+              </FlexBox>
+            </form>
+          </div>
         </Modal>
       )}
     </div>

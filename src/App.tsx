@@ -77,4 +77,3 @@ export default App;
 // TODO 
 // ? save settings of auto-gen when going back to prev route
 // edit set name when viewing
-// name length limit in DnD view

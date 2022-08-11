@@ -4,5 +4,11 @@
     background: var(--color-component-background);
     border-radius: .25rem;
   }
-  
+  &__modal {
+    background: var(--color-component-background);
+    padding: 1rem;
+    margin: 1rem;
+    width: 100%;
+    border-radius: .25rem;
+  }
 }
