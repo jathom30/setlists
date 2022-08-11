@@ -3,7 +3,7 @@ import { CollapsingButton, FlexBox, HeaderBox, SongDisplay, DataViz, AddSong } f
 import pluralize from "pluralize";
 import { Song } from "typings";
 import { Draggable, Droppable } from 'react-beautiful-dnd'
-import { faDatabase, faEye, faEyeSlash, faGrip, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faDatabase, faEyeSlash, faGrip, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Select from "react-select";
 import "./CreateSet.scss"
@@ -35,6 +35,13 @@ export const CreateSet = ({ set, availableSongs, setKey, onChange, onRemove, onR
       setEnabled(false)
     }
   }, [])
+
+  // make sure mobile dataViz closes when moving to wider viewports
+  useEffect(() => {
+    if (!singleCol) {
+      setShowDataViz(false)
+    }
+  }, [singleCol])
 
   if (!enabled) { return null }
 

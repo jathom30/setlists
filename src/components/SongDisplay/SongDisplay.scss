@@ -8,4 +8,15 @@
   &:hover {
     box-shadow: var(--box-shadow-hover);
   }
+  &__name-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    min-width: 0;
+  }
+  &__name {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 }

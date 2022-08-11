@@ -1,4 +1,4 @@
-import { FlexBox, PieChart } from "components";
+import { FlexBox, PieChart, Label } from "components";
 import React from "react";
 import { heatColors } from "songConstants";
 import { Song, SongFeel } from "typings";
@@ -20,9 +20,14 @@ export const FeelChart = ({ songs }: { songs: Song[] }) => {
     }
   })
 
+  if (uniqueFeels.length === 0) {
+    return null
+  }
+
   return (
     <div className="FeelChart">
-      <FlexBox gap="1rem" alignItems="center" justifyContent="center">
+      <FlexBox flexDirection="column" gap=".25rem">
+        <Label>Feels</Label>
         <PieChart slices={feelSlices} />
       </FlexBox>
     </div>

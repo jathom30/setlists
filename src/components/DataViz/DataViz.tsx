@@ -6,10 +6,7 @@ export const DataViz = ({ set }: { set: Song[] }) => {
   return (
     <div className="DataViz">
       <FlexBox flexDirection="column" gap="2rem">
-        <FlexBox flexDirection="column" gap=".25rem">
-          <Label>Feels</Label>
-          <FeelChart songs={set} />
-        </FlexBox>
+        <FeelChart songs={set} />
         <FlexBox flexDirection="column" gap=".25rem">
           <Label>Tempos</Label>
           <TempoWave set={set} />

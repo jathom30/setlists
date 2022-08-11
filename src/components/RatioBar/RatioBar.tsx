@@ -14,11 +14,11 @@ export const RatioBar = ({ ratio }: { ratio: Record<'start' | 'stop', { label: s
       <HeaderBox>
         <FlexBox alignItems="center" gap=".25rem">
           <span style={{ background: heatColors[2], width: '1rem', height: '1rem' }} />
-          <span>{start.label} {start.amount}</span>
+          <span>{start.label} {Math.round(percent)}%</span>
         </FlexBox>
         <FlexBox alignItems="center" gap=".25rem">
           <span style={{ background: heatColors[1], width: '1rem', height: '1rem' }} />
-          <span>{stop.label} {stop.amount}</span>
+          <span>{stop.label} {Math.round(100 - percent)}%</span>
         </FlexBox>
       </HeaderBox>
     </FlexBox>

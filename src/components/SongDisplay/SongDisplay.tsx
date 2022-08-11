@@ -9,10 +9,10 @@ export const SongDisplay = ({ song, children, onRemove, index }: { song: Song; c
   return (
     <div className="SongDisplay">
       <HeaderBox>
-        <FlexBox gap="1rem" alignItems="center">
+        <div className="SongDisplay__name-wrapper">
           {children}
-          <span>{index}. <strong>{song.name}</strong></span>
-        </FlexBox>
+          <span className="SongDisplay__name">{index}. <strong>{song.name}</strong></span>
+        </div>
         <FlexBox gap=".5rem">
           <Link to={`/songs/${song.id}`}>
             <Button kind="secondary" isRounded icon={faEdit} />

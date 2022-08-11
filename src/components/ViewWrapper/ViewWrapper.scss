@@ -10,6 +10,7 @@
   }
   &__main {
     grid-area: main;
+    min-width: 0;
   }
 
   grid-template-columns: 400px 1fr 400px;

@@ -44,7 +44,6 @@ export const getPointsWithCurve = (coords: {x: number, y: number}[]) => coords.m
 })
 
 function getCoordinatesForPercent(percent: number) {
-  console.log(percent)
   const x = Math.cos(2 * Math.PI * percent);
   const y = Math.sin(2 * Math.PI * percent);
   return [x, y];

@@ -7,16 +7,18 @@ import { useGetBands, useOnClickOutside, useUser } from "hooks";
 import { LOGOUT_QUERY, USER_QUERY } from "queryKeys";
 import React, { useRef, useState } from "react";
 import { useIdentityContext } from "react-netlify-identity";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import './UserSelect.scss'
 
 export const UserSelect = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { logoutUser, user } = useIdentityContext()
   const navigate = useNavigate()
+  const location = useLocation()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const queryClient = useQueryClient()
+
 
   useOnClickOutside([buttonRef, contentRef], () => setIsOpen(false))
 
@@ -25,6 +27,10 @@ export const UserSelect = () => {
   const updateUserMutation = useMutation(updateUser, {
     onSuccess: () => {
       queryClient.invalidateQueries([USER_QUERY])
+      // if user is not on a base path when switching band (viewing a song or set),
+      // send them to the relevant base path
+      const locationBasePath = location.pathname.split('/')[1]
+      navigate(locationBasePath)
     }
   })
 

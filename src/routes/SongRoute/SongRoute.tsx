@@ -73,6 +73,7 @@ export const SongRoute = () => {
         [field]: newVal,
       }
     })
+    console.log(field, newVal)
     handleDebouncedUpdate(field, newVal)
   }
 
@@ -167,7 +168,7 @@ export const SongRoute = () => {
                         isMulti
                         defaultValue={localSong.feel && localSong.feel.map(f => ({ label: capitalizeFirstLetter(f), value: f }))}
                         onChange={newFeels => {
-                          if (!newFeels || !localSong.feel) return
+                          if (!newFeels) return
                           handleUpdateDetails('feel', newFeels.map(f => f.value))
                         }}
                         options={feels.map(feel => ({ label: capitalizeFirstLetter(feel), value: feel }))}
