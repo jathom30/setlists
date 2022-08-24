@@ -1,3 +1,10 @@
 .SongsRoute {
   height: 100%;
+  &__popover {
+    background: var(--color-component-background);
+    padding: 1rem;
+    border-radius: .25rem;
+    overflow: auto;
+    height: 100%;
+  }
 }
