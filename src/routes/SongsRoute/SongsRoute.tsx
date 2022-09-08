@@ -62,7 +62,7 @@ export const SongsRoute = () => {
                         <SongFilters onChange={handleFilterChange} />
                       </div>
                     }
-                    position={['bottom', 'left']}
+                    position={['bottom']}
                     align="end"
                   >
                     <div>
